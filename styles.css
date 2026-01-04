@@ -483,13 +483,13 @@ canvas {
 }
 
 .week-grid {
-    display: flex;
-    gap: 16px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
     flex: 1;
     min-height: 0;
-    overflow-x: auto;
-    padding-bottom: 12px;
-    scroll-behavior: smooth;
+    overflow: hidden;
+    padding-bottom: 0;
 }
 
 .week-grid::-webkit-scrollbar {
@@ -510,7 +510,7 @@ canvas {
 }
 
 .day-column {
-    min-width: 240px;
+    min-width: 0;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -522,13 +522,8 @@ canvas {
 }
 
 .day-column.today {
-    position: sticky;
-    left: 0;
-    z-index: 10;
     background: var(--bg-secondary);
-    /* Solid background, no transparency */
     border: 1px solid var(--border-glass);
-    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.4);
 }
 
 .day-column.goal-reached {
@@ -1325,11 +1320,11 @@ canvas {
     }
 
     .week-grid {
-        overflow-x: auto;
+        overflow: hidden;
     }
 
     .day-column {
-        min-width: 140px;
+        min-width: 0;
     }
 }
 
@@ -1350,4 +1345,71 @@ canvas {
     .add-card-btn {
         flex: 1 1 calc(50% - 4px);
     }
+}
+
+/* ===========================
+   Context Menu
+   =========================== */
+.context-menu {
+    position: fixed;
+    z-index: 1000;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg), 0 0 20px rgba(0, 0, 0, 0.5);
+    padding: 6px;
+    display: none;
+    min-width: 180px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    animation: contextMenuFade 0.15s ease-out;
+}
+
+@keyframes contextMenuFade {
+    from {
+        opacity: 0;
+        transform: translateY(-5px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.menu-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.menu-item svg {
+    width: 16px;
+    height: 16px;
+    color: var(--text-tertiary);
+}
+
+.menu-item.delete:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.menu-item.delete:hover svg {
+    color: #ef4444;
 }

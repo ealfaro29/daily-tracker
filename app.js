@@ -58,7 +58,11 @@ const elements = {
     prevMonthBtn: document.getElementById('prevMonth'),
     nextMonthBtn: document.getElementById('nextMonth'),
     totalPostsValue: document.getElementById('totalPostsValue'),
-    completionRateValue: document.getElementById('completionRateValue')
+    completionRateValue: document.getElementById('completionRateValue'),
+    // Context Menu
+    cardContextMenu: document.getElementById('cardContextMenu'),
+    menuDelete: document.getElementById('menuDelete'),
+    menuEdit: document.getElementById('menuEdit')
 };
 
 // ===========================
@@ -69,7 +73,10 @@ function generateId() {
 }
 
 function getDateKey(date) {
-    return date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 function formatDateShort(date) {
@@ -85,8 +92,8 @@ function getWeekDates() {
     const today = new Date();
     const dates = [];
 
-    // Today + 6 days forward (7 days total)
-    for (let i = 0; i <= 6; i++) {
+    // Today + 3 days forward (4 days total)
+    for (let i = 0; i <= 3; i++) {
         const d = new Date(today);
         d.setDate(d.getDate() + i);
         dates.push(d);
@@ -97,7 +104,9 @@ function getWeekDates() {
 
 function isToday(date) {
     const today = new Date();
-    return getDateKey(date) === getDateKey(today);
+    return date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate();
 }
 
 // ===========================
@@ -241,8 +250,9 @@ function updateCardDescription(cardId, description, inPool = true) {
 function toggleCardStatus(cardId) {
     for (const dateKey in appData.schedule) {
         if (Array.isArray(appData.schedule[dateKey])) {
-            const card = appData.schedule[dateKey].find(c => c && c.id === cardId);
-            if (card) {
+            const cardIndex = appData.schedule[dateKey].findIndex(c => c && c.id === cardId);
+            if (cardIndex !== -1) {
+                const card = appData.schedule[dateKey][cardIndex];
                 card.status = card.status === CARD_STATUS.POSTED
                     ? CARD_STATUS.SCHEDULED
                     : CARD_STATUS.POSTED;
@@ -252,6 +262,66 @@ function toggleCardStatus(cardId) {
             }
         }
     }
+}
+
+// ===========================
+// Context Menu & Edit Logic
+// ===========================
+let activeContextCard = null;
+
+function showContextMenu(e, cardId, isPool) {
+    e.preventDefault();
+    activeContextCard = { id: cardId, isPool };
+
+    const menu = elements.cardContextMenu;
+    menu.style.display = 'block';
+
+    // Position menu properly, accounting for window boundaries
+    const menuWidth = 180;
+    const menuHeight = 100;
+    let x = e.clientX;
+    let y = e.clientY;
+
+    if (x + menuWidth > window.innerWidth) x -= menuWidth;
+    if (y + menuHeight > window.innerHeight) y -= menuHeight;
+
+    menu.style.left = `${x}px`;
+    menu.style.top = `${y}px`;
+
+    // Hide menu on click elsewhere
+    const hideMenu = () => {
+        menu.style.display = 'none';
+        document.removeEventListener('click', hideMenu);
+    };
+    setTimeout(() => document.addEventListener('click', hideMenu), 10);
+}
+
+function handleMenuDelete() {
+    if (!activeContextCard) return;
+    deleteCard(activeContextCard.id, activeContextCard.isPool);
+    activeContextCard = null;
+}
+
+function handleMenuEdit() {
+    if (!activeContextCard) return;
+
+    const { id, isPool } = activeContextCard;
+
+    // If it's a scheduled card, we can't edit text directly in the card face because it's a div
+    // Let's use a prompt or transform it into a pool item temporarily? 
+    // Actually, let's just use a prompt for simplicity as a premium "quick edit"
+    const currentCard = isPool
+        ? appData.pool.find(c => c.id === id)
+        : Object.values(appData.schedule).flat().find(c => c && c.id === id);
+
+    if (currentCard) {
+        const newDesc = prompt("Edit content description:", currentCard.description || "");
+        if (newDesc !== null) {
+            updateCardDescription(id, newDesc, isPool);
+            render();
+        }
+    }
+    activeContextCard = null;
 }
 
 // ===========================
@@ -314,17 +384,14 @@ function handleDrop(e, targetDate, slotIndex) {
     const { card, fromPool, sourceDate } = draggedCard;
     const targetKey = getDateKey(targetDate);
 
-    // Remove from source (entire schedule to be safe and prevent duplicates)
-    for (const dateKey in appData.schedule) {
-        if (Array.isArray(appData.schedule[dateKey])) {
-            appData.schedule[dateKey] = appData.schedule[dateKey].map(slot =>
-                (slot && slot.id === card.id) ? null : slot
-            );
-        }
-    }
-
-    if (fromPool) {
-        appData.pool = appData.pool.filter(c => c.id !== card.id);
+    // Remove from source ONLY (to prevent losing card if dropped on same day)
+    // We search the entire appData to ensure we remove any existing instance 
+    // (prevention against "strange duplicates")
+    appData.pool = appData.pool.filter(c => c.id !== card.id);
+    for (const dKey in appData.schedule) {
+        appData.schedule[dKey] = appData.schedule[dKey].map(slot =>
+            (slot && slot.id === card.id) ? null : slot
+        );
     }
 
     // Initialize target day if needed
@@ -361,13 +428,12 @@ function handleDropToPool(e) {
 
     const { card, sourceDate } = draggedCard;
 
-    // Remove from schedule (entirely to prevent duplicates)
-    for (const dateKey in appData.schedule) {
-        if (Array.isArray(appData.schedule[dateKey])) {
-            appData.schedule[dateKey] = appData.schedule[dateKey].map(slot =>
-                (slot && slot.id === card.id) ? null : slot
-            );
-        }
+    // Remove from source ONLY
+    appData.pool = appData.pool.filter(c => c.id !== card.id);
+    for (const dKey in appData.schedule) {
+        appData.schedule[dKey] = appData.schedule[dKey].map(slot =>
+            (slot && slot.id === card.id) ? null : slot
+        );
     }
 
     // Add back to pool
@@ -424,10 +490,13 @@ function renderPool() {
             updateCardDescription(card.id, e.target.value, true);
         });
 
+        // Context menu (Right-click)
+        el.addEventListener('contextmenu', (e) => showContextMenu(e, card.id, true));
+
         elements.poolCards.appendChild(el);
     });
 
-    // Make pool a drop target to return cards
+    // Container level drop
     elements.poolCards.addEventListener('dragover', handleDragOver);
     elements.poolCards.addEventListener('drop', handleDropToPool);
 }
@@ -445,14 +514,14 @@ function renderWeekGrid() {
     dates.forEach(date => {
         const dateKey = getDateKey(date);
 
-        // Ensure schedule for this day is a fixed-size array
+        // Ensure schedule for this day exists
         if (!appData.schedule[dateKey]) {
             appData.schedule[dateKey] = Array(SLOTS_PER_DAY).fill(null);
         }
 
         const scheduleDay = appData.schedule[dateKey];
         const activeCardsCount = scheduleDay.filter(c => c !== null).length;
-        const isComplete = activeCardsCount >= SLOTS_PER_DAY;
+        const isComplete = activeCardsCount >= 5; // Goal is 5+
 
         const column = document.createElement('div');
         column.className = 'day-column';
@@ -507,6 +576,7 @@ function renderWeekGrid() {
 
                 cardEl.addEventListener('dragstart', (e) => handleDragStart(e, card, false));
                 cardEl.addEventListener('dragend', handleDragEnd);
+                cardEl.addEventListener('contextmenu', (e) => showContextMenu(e, card.id, false));
                 cardEl.addEventListener('click', (e) => {
                     e.stopPropagation();
                     toggleCardStatus(card.id);
@@ -686,6 +756,7 @@ function renderCalendar() {
 
     // Days
     for (let i = 1; i <= lastDate; i++) {
+        // Use local date format for key to match schedule state
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
         const cards = appData.schedule[dateStr] || [];
 
@@ -698,7 +769,7 @@ function renderCalendar() {
             }
         });
 
-        // Goal met indicator (e.g., >= 5 posts)
+        // Goal met indicator (e.g., >= 5 items)
         let isSuccess = cards.filter(c => c !== null).length >= 5;
 
         const cell = document.createElement('div');
@@ -854,13 +925,9 @@ function setupEventListeners() {
         renderCalendar();
     });
 
-    // Horizontal Scroll with Wheel for Week Grid
-    elements.weekGrid.addEventListener('wheel', (e) => {
-        if (e.deltaY !== 0) {
-            e.preventDefault();
-            elements.weekGrid.scrollLeft += e.deltaY;
-        }
-    });
+    // Context Menu Actions
+    elements.menuDelete.addEventListener('click', handleMenuDelete);
+    elements.menuEdit.addEventListener('click', handleMenuEdit);
 }
 
 // ===========================
