@@ -526,9 +526,15 @@ canvas {
     position: sticky;
     left: 0;
     z-index: 10;
-    background: rgba(20, 184, 166, 0.08);
-    border: 2px solid var(--accent-today);
-    box-shadow: 0 0 30px rgba(20, 184, 166, 0.15), 4px 0 16px rgba(0, 0, 0, 0.4);
+    background: var(--bg-secondary);
+    /* Solid background, no transparency */
+    border: 1px solid var(--border-glass);
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.4);
+}
+
+.day-column.goal-reached {
+    border: 2px solid var(--accent-today) !important;
+    box-shadow: 0 0 30px rgba(20, 184, 166, 0.15), 4px 0 16px rgba(0, 0, 0, 0.4) !important;
 }
 
 .day-column.drag-over {

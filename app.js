@@ -446,7 +446,12 @@ function renderWeekGrid() {
 
         const column = document.createElement('div');
         column.className = 'day-column';
-        if (isToday(date)) column.classList.add('today');
+        if (isToday(date)) {
+            column.classList.add('today');
+            if (activeCardsCount >= 5) {
+                column.classList.add('goal-reached');
+            }
+        }
 
         column.innerHTML = `
             <div class="day-header">
