@@ -314,14 +314,17 @@ function handleDrop(e, targetDate, slotIndex) {
     const { card, fromPool, sourceDate } = draggedCard;
     const targetKey = getDateKey(targetDate);
 
-    // Remove from source pool
+    // Remove from source (entire schedule to be safe and prevent duplicates)
+    for (const dateKey in appData.schedule) {
+        if (Array.isArray(appData.schedule[dateKey])) {
+            appData.schedule[dateKey] = appData.schedule[dateKey].map(slot =>
+                (slot && slot.id === card.id) ? null : slot
+            );
+        }
+    }
+
     if (fromPool) {
         appData.pool = appData.pool.filter(c => c.id !== card.id);
-    } else if (sourceDate) {
-        // Remove from source schedule slot
-        appData.schedule[sourceDate] = appData.schedule[sourceDate].map(slot =>
-            (slot && slot.id === card.id) ? null : slot
-        );
     }
 
     // Initialize target day if needed
@@ -348,9 +351,13 @@ function handleDropToPool(e) {
 
     const { card, sourceDate } = draggedCard;
 
-    // Remove from schedule
-    if (sourceDate) {
-        appData.schedule[sourceDate] = appData.schedule[sourceDate].filter(c => c.id !== card.id);
+    // Remove from schedule (entirely to prevent duplicates)
+    for (const dateKey in appData.schedule) {
+        if (Array.isArray(appData.schedule[dateKey])) {
+            appData.schedule[dateKey] = appData.schedule[dateKey].map(slot =>
+                (slot && slot.id === card.id) ? null : slot
+            );
+        }
     }
 
     // Add back to pool
@@ -443,8 +450,10 @@ function renderWeekGrid() {
 
         column.innerHTML = `
             <div class="day-header">
-                <div class="day-name">${getDayName(date)}</div>
-                <div class="day-date">${formatDateShort(date)}</div>
+                <div class="day-info">
+                    <span class="day-name">${getDayName(date)}</span>
+                    <span class="day-date">${formatDateShort(date)}</span>
+                </div>
                 <div class="day-progress ${isComplete ? 'complete' : ''}">
                     ${activeCardsCount}/${SLOTS_PER_DAY} ${isComplete ? '✓' : ''}
                 </div>
@@ -724,53 +733,65 @@ function renderCharts() {
                 data: [posts, promos, reels],
                 backgroundColor: ['#6366f1', '#a855f7', '#ec4899'],
                 borderWidth: 0,
-                hoverOffset: 8
+                hoverOffset: 12,
+                borderRadius: 4
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '72%',
+            cutout: '82%', // Thinner donut
             plugins: {
                 legend: {
-                    position: 'right',
+                    position: 'bottom', // Moved to bottom for better centering
                     labels: {
                         color: '#94a3b8',
                         usePointStyle: true,
-                        pointStyle: 'rectRounded',
-                        padding: 15,
-                        font: { size: 11, weight: '600' }
+                        pointStyle: 'circle',
+                        padding: 20,
+                        font: { size: 12, weight: '500' }
                     }
                 },
                 tooltip: {
                     enabled: true,
-                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    backgroundColor: 'rgba(15, 15, 20, 0.9)',
                     titleColor: '#fff',
-                    bodyColor: '#fff'
+                    bodyColor: '#fff',
+                    padding: 12,
+                    displayColors: false
                 }
             },
-            layout: { padding: 15 }
+            layout: {
+                padding: {
+                    top: 10,
+                    bottom: 10
+                }
+            }
         },
         plugins: [{
             id: 'centerText',
             beforeDraw: (chart) => {
                 const { ctx, width, height } = chart;
                 ctx.restore();
-                const fontSize = (height / 120).toFixed(2);
-                ctx.font = `bold ${fontSize}em sans-serif`;
-                ctx.textBaseline = "middle";
-                ctx.fillStyle = "#fff";
-                const text = posts + promos + reels;
-                const textX = Math.round((width - ctx.measureText(text).width) / 2);
-                const textY = height / 2.3;
-                ctx.fillText(text, textX, textY);
 
-                ctx.font = `500 ${(fontSize * 0.4).toFixed(2)}em sans-serif`;
-                ctx.fillStyle = "#94a3b8";
+                // Calculate chart area center
+                const chartArea = chart.chartArea;
+                const centerX = (chartArea.left + chartArea.right) / 2;
+                const centerY = (chartArea.top + chartArea.bottom) / 2;
+
+                const fontSize = (height / 140).toFixed(2);
+                ctx.font = `bold ${fontSize}em 'Inter', sans-serif`;
+                ctx.textBaseline = "middle";
+                ctx.textAlign = "center";
+                ctx.fillStyle = "#fff";
+
+                const total = posts + promos + reels;
+                ctx.fillText(total, centerX, centerY - 8);
+
+                ctx.font = `500 ${(fontSize * 0.4).toFixed(2)}em 'Inter', sans-serif`;
+                ctx.fillStyle = "#64748b";
                 const subText = "TOTAL";
-                const subTextX = Math.round((width - ctx.measureText(subText).width) / 2);
-                const subTextY = height / 1.7;
-                ctx.fillText(subText, subTextX, subTextY);
+                ctx.fillText(subText, centerX, centerY + 18);
                 ctx.save();
             }
         }]
