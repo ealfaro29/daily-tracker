@@ -1005,7 +1005,8 @@ canvas {
 /* Dashboard Grid & Layout Polish */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 1.8fr 1fr;
+    grid-template-columns: 1.6fr 1fr;
+    /* Better balance */
     gap: var(--bento-gap);
     flex: 1;
     min-height: 0;
@@ -1056,10 +1057,11 @@ canvas {
     flex: 1;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: auto repeat(5, 110px);
-    /* Fixed row height for consistency */
-    gap: var(--bento-inner-gap);
-    padding: var(--bento-inner-gap) 0;
+    grid-template-rows: auto repeat(5, 1fr);
+    /* Flexible row height */
+    gap: 8px;
+    /* Tighter gap for calendar */
+    padding: 8px 0;
 }
 
 /* Calendar Cells */
@@ -1148,8 +1150,9 @@ canvas {
 .kpi-card {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
     justify-content: center;
+    padding: var(--bento-padding) !important;
 }
 
 .kpi-label {
@@ -1180,10 +1183,19 @@ canvas {
 
 /* Chart Box Refinement */
 .chart-box {
-    flex: 1;
     display: flex;
     flex-direction: column;
     min-height: 0;
+}
+
+.chart-box:has(#activityTrendChart) {
+    flex: 2;
+    /* More prominence to trend */
+}
+
+.chart-box:has(#contentMixChart) {
+    flex: 1;
+    /* Give mix chart some vertical space too */
 }
 
 .chart-header-legend {
@@ -1240,10 +1252,10 @@ canvas {
 
 /* Specific fix for Content Mix side-by-side - Simplified for Horizontal Bar */
 .chart-box:has(#contentMixChart) .chart-container {
-    padding: 0;
-    height: 48px;
-    /* Minimal height for the bar */
-    margin: 10px 0;
+    padding: 10px 0;
+    height: 64px;
+    /* Slightly taller bar */
+    margin: auto 0;
 }
 
 /* Monthly Legend Enhancement */
@@ -1305,18 +1317,20 @@ canvas {
 }
 
 .kpi-label {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--text-tertiary);
     text-transform: uppercase;
-    letter-spacing: 0.8px;
-    font-weight: 600;
+    letter-spacing: 1.2px;
+    font-weight: 700;
 }
 
 .kpi-value {
-    font-size: 1.75rem;
+    font-size: 2.2rem;
+    /* More heroic value */
     font-weight: 800;
-    margin: 4px 0;
+    margin: 2px 0;
     color: var(--text-primary);
+    line-height: 1.1;
 }
 
 .kpi-trend {
@@ -1330,7 +1344,7 @@ canvas {
 }
 
 .calendar-box {
-    min-height: 650px;
+    flex: 1;
     display: flex;
     flex-direction: column;
 }
