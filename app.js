@@ -112,74 +112,39 @@ function isToday(date) {
 // ===========================
 // Data Management (API-First with LocalStorage Fallback)
 // ===========================
-const USE_API = window.location.protocol.includes('http'); // Only use API if running on server
+// ===========================
+// Data Management (LocalStorage Based)
+// ===========================
 
-async function loadData() {
-    try {
-        if (USE_API) {
-            const response = await fetch('/api/data');
-            if (response.ok) {
-                const data = await response.json();
-                appData = {
-                    pool: data.pool || [],
-                    schedule: data.schedule || {}
-                };
-                permanentNotes = data.notes || '';
-            }
-        } else {
-            // Fallback to LocalStorage
-            loadDataLocal();
+function loadData() {
+    // Load App Data
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+        try {
+            appData = JSON.parse(stored);
+        } catch (e) {
+            console.error('Error parsing stored data', e);
+            // Keep default empty state
         }
-    } catch (e) {
-        console.error('Error loading data from API, falling back to local:', e);
-        loadDataLocal();
     }
+
+    // Load Notes
+    const storedNotes = localStorage.getItem(NOTES_KEY);
+    permanentNotes = storedNotes || '';
 
     // Initial Render
     elements.permanentNotes.value = permanentNotes;
     render();
 }
 
-function loadDataLocal() {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-        appData = JSON.parse(stored);
-    }
-    const storedNotes = localStorage.getItem(NOTES_KEY);
-    permanentNotes = storedNotes || '';
-}
-
-async function saveData() {
-    // Save to LocalStorage always (as backup/instant)
+function saveData() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
-
-    if (USE_API) {
-        try {
-            // Clean data before saving to ensure it's serializable if needed
-            // (though JSON.stringify handles nulls in arrays fine)
-            await fetch('/api/data', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    pool: appData.pool,
-                    schedule: appData.schedule,
-                    notes: permanentNotes
-                })
-            });
-        } catch (e) {
-            console.error('Error saving to API:', e);
-        }
-    }
 }
 
-async function saveNotes() {
+function saveNotes() {
     localStorage.setItem(NOTES_KEY, elements.permanentNotes.value);
     permanentNotes = elements.permanentNotes.value;
     showNotesSaved();
-
-    if (USE_API) {
-        saveData(); // Sync everything to JSON
-    }
 }
 
 function showNotesSaved() {
