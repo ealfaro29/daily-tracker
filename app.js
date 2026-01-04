@@ -451,8 +451,17 @@ function renderPool() {
         el.querySelector('.card-delete').addEventListener('click', () => deleteCard(card.id, true));
 
         // Description update
-        el.querySelector('.card-description').addEventListener('input', (e) => {
+        const textarea = el.querySelector('.card-description');
+        textarea.addEventListener('input', (e) => {
             updateCardDescription(card.id, e.target.value, true);
+        });
+
+        // Save on Enter (prevent new line)
+        textarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                e.target.blur();
+            }
         });
 
         // Context menu (Right-click)
