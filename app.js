@@ -6,7 +6,7 @@
 // ===========================
 // Constants & Configuration
 // ===========================
-const SLOTS_PER_DAY = 6;
+const SLOTS_PER_DAY = 8;
 const STORAGE_KEY = 'contentSchedulerData';
 const NOTES_KEY = 'contentSchedulerNotes';
 
@@ -332,6 +332,11 @@ function handleDrop(e, targetDate, slotIndex) {
         appData.schedule[targetKey] = Array(SLOTS_PER_DAY).fill(null);
     }
 
+    // Ensure slotIndex exists in array (allow expansion)
+    while (slotIndex >= appData.schedule[targetKey].length) {
+        appData.schedule[targetKey].push(null);
+    }
+
     // Set initial status as scheduled if coming from pool
     if (fromPool) {
         card.status = CARD_STATUS.SCHEDULED;
@@ -339,6 +344,11 @@ function handleDrop(e, targetDate, slotIndex) {
 
     // Place card in target slot
     appData.schedule[targetKey][slotIndex] = card;
+
+    // Check if we need to add an extra empty slot at the end if the last one was filled
+    if (appData.schedule[targetKey][appData.schedule[targetKey].length - 1] !== null) {
+        appData.schedule[targetKey].push(null);
+    }
 
     saveData();
     render();
@@ -468,8 +478,8 @@ function renderWeekGrid() {
 
         const slotsContainer = column.querySelector('.day-slots');
 
-        // Render fixed slots (filled or empty)
-        for (let i = 0; i < SLOTS_PER_DAY; i++) {
+        // Render all available slots
+        for (let i = 0; i < scheduleDay.length; i++) {
             const card = scheduleDay[i];
 
             if (card) {
@@ -680,21 +690,16 @@ function renderCalendar() {
         const cards = appData.schedule[dateStr] || [];
 
         let dotsHTML = '';
-        let postCount = 0;
-
         cards.forEach(c => {
             if (c) {
-                if (c.type === 'post') { dotsHTML += '<div class="activity-dot post"></div>'; postCount++; }
-                else if (c.type === 'reel') { dotsHTML += '<div class="activity-dot reel"></div>'; postCount++; }
-                else if (c.type === 'promo') dotsHTML += '<div class="activity-dot post"></div>';
+                if (c.type === 'post') { dotsHTML += '<div class="activity-dot post"></div>'; }
+                else if (c.type === 'reel') { dotsHTML += '<div class="activity-dot reel"></div>'; }
+                else if (c.type === 'promo') { dotsHTML += '<div class="activity-dot promo"></div>'; }
             }
         });
 
-        // Goal met indicator (e.g., >= 3 posts)
-        let isSuccess = cards.filter(c => c !== null).length >= 3;
-        if (isSuccess) {
-            dotsHTML = '<div class="activity-dot success"></div>' + dotsHTML;
-        }
+        // Goal met indicator (e.g., >= 5 posts)
+        let isSuccess = cards.filter(c => c !== null).length >= 5;
 
         const cell = document.createElement('div');
         cell.className = `cal-day ${isSuccess ? 'success' : ''}`;
@@ -728,78 +733,70 @@ function renderCharts() {
         }
     });
 
-    // Mix Chart
+    // Mix Chart (Stacked Bar)
     if (contentMixChart) contentMixChart.destroy();
     contentMixChart = new Chart(ctxMix, {
-        type: 'doughnut',
+        type: 'bar',
         data: {
-            labels: ['Posts', 'Promos', 'Reels'],
-            datasets: [{
-                data: [posts, promos, reels],
-                backgroundColor: ['#6366f1', '#a855f7', '#ec4899'],
-                borderWidth: 0,
-                hoverOffset: 12,
-                borderRadius: 4
-            }]
+            labels: ['Total Content'],
+            datasets: [
+                {
+                    label: 'Posts',
+                    data: [posts],
+                    backgroundColor: '#6366f1',
+                    borderRadius: 4
+                },
+                {
+                    label: 'Promos',
+                    data: [promos],
+                    backgroundColor: '#a855f7',
+                    borderRadius: 4
+                },
+                {
+                    label: 'Reels',
+                    data: [reels],
+                    backgroundColor: '#ec4899',
+                    borderRadius: 4
+                }
+            ]
         },
         options: {
+            indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '82%', // Thinner donut
             plugins: {
                 legend: {
-                    position: 'bottom', // Moved to bottom for better centering
+                    position: 'bottom',
                     labels: {
                         color: '#94a3b8',
                         usePointStyle: true,
                         pointStyle: 'circle',
-                        padding: 20,
-                        font: { size: 12, weight: '500' }
+                        padding: 10,
+                        font: { size: 11, weight: '500' }
                     }
                 },
                 tooltip: {
                     enabled: true,
                     backgroundColor: 'rgba(15, 15, 20, 0.9)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    padding: 12,
-                    displayColors: false
+                    padding: 12
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    display: false,
+                    grid: { display: false }
+                },
+                y: {
+                    stacked: true,
+                    display: false,
+                    grid: { display: false }
                 }
             },
             layout: {
-                padding: {
-                    top: 10,
-                    bottom: 10
-                }
+                padding: { left: 0, right: 0, top: 10, bottom: 0 }
             }
-        },
-        plugins: [{
-            id: 'centerText',
-            beforeDraw: (chart) => {
-                const { ctx, width, height } = chart;
-                ctx.restore();
-
-                // Calculate chart area center
-                const chartArea = chart.chartArea;
-                const centerX = (chartArea.left + chartArea.right) / 2;
-                const centerY = (chartArea.top + chartArea.bottom) / 2;
-
-                const fontSize = (height / 140).toFixed(2);
-                ctx.font = `bold ${fontSize}em 'Inter', sans-serif`;
-                ctx.textBaseline = "middle";
-                ctx.textAlign = "center";
-                ctx.fillStyle = "#fff";
-
-                const total = posts + promos + reels;
-                ctx.fillText(total, centerX, centerY - 8);
-
-                ctx.font = `500 ${(fontSize * 0.4).toFixed(2)}em 'Inter', sans-serif`;
-                ctx.fillStyle = "#64748b";
-                const subText = "TOTAL";
-                ctx.fillText(subText, centerX, centerY + 18);
-                ctx.save();
-            }
-        }]
+        }
     });
 
     // Trend Chart (Mock data for demo + real weekly)

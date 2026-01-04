@@ -532,8 +532,9 @@ canvas {
 }
 
 .day-column.goal-reached {
-    border: 2px solid var(--accent-today) !important;
-    box-shadow: 0 0 30px rgba(20, 184, 166, 0.15), 4px 0 16px rgba(0, 0, 0, 0.4) !important;
+    background: rgba(34, 197, 94, 0.08) !important;
+    border: 2px solid var(--accent-success) !important;
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.15), 4px 0 16px rgba(0, 0, 0, 0.4) !important;
 }
 
 .day-column.drag-over {
@@ -1054,7 +1055,8 @@ canvas {
     flex: 1;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: auto repeat(5, 1fr);
+    grid-template-rows: auto repeat(5, 110px);
+    /* Fixed row height for consistency */
     gap: 8px;
     padding: 12px 0;
 }
@@ -1106,30 +1108,32 @@ canvas {
 }
 
 .cal-activity-dots {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 4px;
-    justify-content: flex-end;
+    width: fit-content;
+    margin-top: 8px;
 }
 
 .activity-dot {
-    width: 22px;
-    height: 8px;
+    width: 14px;
+    height: 14px;
     border-radius: 4px;
+    /* Square with rounded corners */
     background: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .activity-dot.post {
     background: var(--accent-post);
 }
 
-.activity-dot.reel {
-    background: var(--accent-reel);
+.activity-dot.promo {
+    background: var(--accent-promo);
 }
 
-.activity-dot.success {
-    background: #4ade80;
-    box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+.activity-dot.reel {
+    background: var(--accent-reel);
 }
 
 /* KPI Cards */
@@ -1193,15 +1197,11 @@ canvas {
     justify-content: center;
 }
 
-/* Specific fix for Content Mix side-by-side */
+/* Specific fix for Content Mix side-by-side - Simplified for Horizontal Bar */
 .chart-box:has(#contentMixChart) .chart-container {
-    flex-direction: row;
-    justify-content: space-between;
     padding: 0 10px;
-}
-
-.chart-box:has(#contentMixChart) canvas {
-    max-width: 60% !important;
+    height: 80px;
+    /* Compact height for the bar */
 }
 
 /* Monthly Legend Enhancement */
@@ -1217,29 +1217,36 @@ canvas {
 .legend-item {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     font-size: 0.75rem;
     color: var(--text-secondary);
+    font-weight: 500;
 }
 
-.legend-item .dot {
-    width: 20px;
-    height: 8px;
-    border-radius: 4px;
+.legend-item .activity-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    box-shadow: none;
+    margin-top: 0;
 }
 
-.dot.success {
-    background: var(--accent-success);
-    box-shadow: 0 0 8px var(--accent-success);
+.legend-item.separator {
+    width: 1px;
+    height: 12px;
+    background: var(--border-light);
+    margin: 0 4px;
 }
 
-.dot.partial {
-    background: var(--accent-primary);
+.goal-highlight {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.5);
 }
 
-.dot.empty {
-    background: var(--text-muted);
-}
+/* Removed dot.success, dot.partial, dot.empty */
 
 /* ===========================
    KPI Grid & Cards
@@ -1281,9 +1288,13 @@ canvas {
     color: var(--accent-success);
 }
 
-/* ===========================
-   Responsive
-   =========================== */
+.calendar-box {
+    min-height: 680px;
+    height: 680px;
+    display: flex;
+    flex-direction: column;
+}
+
 @media (max-width: 1400px) {
     .bento-grid {
         grid-template-columns: 1fr;
