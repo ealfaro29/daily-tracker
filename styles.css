@@ -753,23 +753,26 @@ canvas {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 16px;
-    height: 160px;
-    /* Fixed height for bottom area */
+    height: 180px;
+    /* Increased height for more breathing room */
+    margin-bottom: 24px;
+    flex-shrink: 0;
 }
 
 /* ===========================
    Metrics Section
    =========================== */
 .metrics-section {
-    /* No grid-column needed here as it's inside bottom-row */
     display: flex;
     flex-direction: column;
+    padding: 16px 24px !important;
 }
 
 .metrics-grid {
     display: flex;
-    gap: 16px;
+    gap: 20px;
     flex: 1;
+    align-items: center;
 }
 
 .metric-card {
@@ -777,23 +780,26 @@ canvas {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 8px;
-    padding: 12px 16px;
+    gap: 10px;
+    padding: 16px 20px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-glass);
     border-radius: var(--border-radius-md);
     transition: all 0.3s ease;
+    height: 90px;
 }
 
 .metric-card:hover {
     background: rgba(255, 255, 255, 0.06);
     transform: translateY(-2px);
+    border-color: var(--border-light);
 }
 
 .metric-top {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    width: 100%;
 }
 
 .metric-icon {
@@ -822,10 +828,11 @@ canvas {
 }
 
 .metric-value {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: 800;
     color: var(--text-primary);
     font-variant-numeric: tabular-nums;
+    line-height: 1;
 }
 
 .metric-bar {
@@ -863,6 +870,7 @@ canvas {
 .notes-section {
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .notes-status {
@@ -904,15 +912,14 @@ canvas {
 
 .notes-section textarea {
     flex: 1;
-    resize: none;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-subtle);
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-glass);
     border-radius: var(--border-radius-md);
     padding: 14px;
     color: var(--text-primary);
     font-family: inherit;
-    font-size: 0.9rem;
-    line-height: 1.6;
+    font-size: 0.85rem;
+    line-height: 1.5;
     resize: none;
     outline: none;
     transition: var(--transition-normal);

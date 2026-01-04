@@ -628,11 +628,14 @@ function renderWeekGrid() {
 }
 
 function renderMetrics() {
-    const dates = getWeekDates();
+    const today = new Date();
     let contentCount = 0, reels = 0;
 
-    dates.forEach(date => {
-        const dateKey = getDateKey(date);
+    // Calculate for a full week (7 days) regardless of display
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() + i);
+        const dateKey = getDateKey(d);
         const cards = appData.schedule[dateKey] || [];
         cards.forEach(card => {
             if (card) {
@@ -640,9 +643,9 @@ function renderMetrics() {
                 else if (card.type === 'reel') reels++;
             }
         });
-    });
+    }
 
-    // Goals: Content (Posts + Promos) = 49/week, Reel = 7/week
+    // Goals: Content = 49 (7/day), Reels = 7 (1/day)
     const contentGoal = 49;
     const reelsGoal = 7;
 
@@ -702,26 +705,30 @@ function renderDashboard() {
 }
 
 function renderKPIs() {
-    let totalPosts = 0;
-    let daysWithContent = 0;
     const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
 
-    // Calculate stats from schedule
+    let totalScheduledMonth = 0;
+    let successfulDaysMonth = 0;
+
+    // Count cards and successful days for the entire current month
     Object.keys(appData.schedule).forEach(dateKey => {
-        const cards = appData.schedule[dateKey];
-        if (cards && cards.length > 0) {
-            totalPosts += cards.length;
-            daysWithContent++;
+        const date = new Date(dateKey + 'T12:00:00');
+        if (date.getMonth() === currentMonth && date.getFullYear() === currentYear) {
+            const cards = appData.schedule[dateKey].filter(c => c !== null);
+            totalScheduledMonth += cards.length;
+            // Success = 5+ items per day
+            if (cards.length >= 5) successfulDaysMonth++;
         }
     });
 
-    // Animate numbers
-    elements.totalPostsValue.textContent = totalPosts;
+    elements.totalPostsValue.textContent = totalScheduledMonth;
 
-    // Mock completion (based on days with at least 1 post vs days in month so far)
-    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-    const rate = Math.round((daysWithContent / Math.max(1, today.getDate())) * 100);
-    elements.completionRateValue.textContent = `${rate}%`;
+    // Monthly Coverage: % of days in the month that have a full schedule (5+ items)
+    const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const coverageRate = Math.round((successfulDaysMonth / totalDaysInMonth) * 100);
+    elements.completionRateValue.textContent = `${coverageRate}%`;
 }
 
 function renderCalendar() {
