@@ -194,7 +194,7 @@
                             </h2>
                             <div class="calendar-nav">
                                 <button id="prevMonth" class="icon-btn">←</button>
-                                <span id="currentMonthLabel">October 2023</span>
+                                <span id="currentMonthLabel">...</span>
                                 <button id="nextMonth" class="icon-btn">→</button>
                             </div>
                         </div>
@@ -231,6 +231,11 @@
                         <div class="bento-box chart-box">
                             <div class="box-header">
                                 <h2>Content Mix</h2>
+                                <div class="chart-header-legend">
+                                    <div class="header-legend-item"><span class="header-dot posts"></span> Posts</div>
+                                    <div class="header-legend-item"><span class="header-dot promos"></span> Promos</div>
+                                    <div class="header-legend-item"><span class="header-dot reels"></span> Reels</div>
+                                </div>
                             </div>
                             <div class="chart-container">
                                 <canvas id="contentMixChart"></canvas>
@@ -241,6 +246,9 @@
                         <div class="bento-box chart-box">
                             <div class="box-header">
                                 <h2>Activity Trend</h2>
+                                <div class="chart-header-legend">
+                                    <div class="header-legend-item"><span class="header-dot trend"></span> Volume</div>
+                                </div>
                             </div>
                             <div class="chart-container">
                                 <canvas id="activityTrendChart"></canvas>

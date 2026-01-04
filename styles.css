@@ -1001,23 +1001,22 @@ canvas {
 }
 
 /* Dashboard Grid */
+/* Dashboard Grid & Layout Polish */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
+    grid-template-columns: 1.8fr 1fr;
+    /* Slightly wider calendar */
+    gap: 24px;
     flex: 1;
     min-height: 0;
-    padding: 16px 0;
-    overflow: hidden;
+    padding: 20px 0;
 }
 
 .dashboard-sidebar {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
     height: 100%;
-    overflow: hidden;
-    /* Ensure sidebar content doesn't overflow */
 }
 
 /* Calendar Box */
@@ -1025,8 +1024,9 @@ canvas {
     display: flex;
     flex-direction: column;
     height: 100%;
-    /* Force full height in grid cell */
+    min-height: 650px;
     overflow: hidden;
+    padding: 24px !important;
 }
 
 .calendar-nav {
@@ -1180,14 +1180,56 @@ canvas {
     color: var(--accent-promo);
 }
 
-/* Chart Box Fixes */
+/* Chart Box Refinement */
 .chart-box {
-    max-height: 280px;
-    /* Constrain chart boxes */
     flex: 1;
-    min-height: 0;
     display: flex;
     flex-direction: column;
+    min-height: 0;
+    padding: 20px !important;
+}
+
+.chart-header-legend {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.header-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+}
+
+.header-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.header-dot.posts {
+    background: var(--accent-post);
+}
+
+.header-dot.promos {
+    background: var(--accent-promo);
+}
+
+.header-dot.reels {
+    background: var(--accent-reel);
+}
+
+.header-dot.trend {
+    background: var(--accent-success);
+}
+
+.chart-box .box-header {
+    margin-bottom: 20px;
 }
 
 .chart-container {
@@ -1201,9 +1243,10 @@ canvas {
 
 /* Specific fix for Content Mix side-by-side - Simplified for Horizontal Bar */
 .chart-box:has(#contentMixChart) .chart-container {
-    padding: 0 10px;
-    height: 80px;
-    /* Compact height for the bar */
+    padding: 0;
+    height: 48px;
+    /* Minimal height for the bar */
+    margin: 10px 0;
 }
 
 /* Monthly Legend Enhancement */
@@ -1291,8 +1334,7 @@ canvas {
 }
 
 .calendar-box {
-    min-height: 680px;
-    height: 680px;
+    min-height: 650px;
     display: flex;
     flex-direction: column;
 }

@@ -664,6 +664,11 @@ function render() {
     renderPool();
     renderWeekGrid();
     renderMetrics();
+
+    // Also update dashboard if active
+    if (currentView === 'metrics') {
+        renderDashboard();
+    }
 }
 
 // ===========================
@@ -844,59 +849,79 @@ function renderCharts() {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: '#94a3b8',
-                        usePointStyle: true,
-                        pointStyle: 'circle',
-                        padding: 10,
-                        font: { size: 11, weight: '500' }
-                    }
+                    display: false
                 },
                 tooltip: {
-                    enabled: true,
-                    backgroundColor: 'rgba(15, 15, 20, 0.9)',
-                    padding: 12
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    titleColor: '#e2e8f0',
+                    bodyColor: '#94a3b8',
+                    padding: 12,
+                    displayColors: true
                 }
             },
             scales: {
                 x: {
                     stacked: true,
-                    display: false,
-                    grid: { display: false }
+                    grid: { display: false },
+                    ticks: { display: false },
+                    border: { display: false }
                 },
                 y: {
                     stacked: true,
-                    display: false,
-                    grid: { display: false }
+                    grid: { display: false },
+                    ticks: { display: false },
+                    border: { display: false }
                 }
-            },
-            layout: {
-                padding: { left: 0, right: 0, top: 10, bottom: 0 }
             }
         }
     });
 
-    // Trend Chart (Mock data for demo + real weekly)
+    // Trend Chart (Line)
     if (activityTrendChart) activityTrendChart.destroy();
+
+    // Calculate weekly volume for trend
+    const weeklyVolume = [0, 0, 0, 0];
+    Object.keys(appData.schedule).forEach(dateKey => {
+        const d = new Date(dateKey + 'T12:00:00');
+        const week = Math.floor((d.getDate() - 1) / 7);
+        if (week >= 0 && week < 4) {
+            weeklyVolume[week] += appData.schedule[dateKey].filter(c => c !== null).length;
+        }
+    });
+
     activityTrendChart = new Chart(ctxTrend, {
         type: 'line',
         data: {
             labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
             datasets: [{
-                label: 'Activity',
-                data: [12, 19, 15, posts + promos + reels], // Mock + Real
+                label: 'Volume',
+                data: weeklyVolume,
                 borderColor: '#22c55e',
-                tension: 0.4
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+                pointBackgroundColor: '#22c55e'
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: {
+                legend: {
+                    display: false // Legend moved to header
+                }
+            },
             scales: {
-                x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
-                y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { color: '#64748b' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#64748b' }
+                }
             }
         }
     });
