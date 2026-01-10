@@ -278,7 +278,7 @@
             <!-- VIEW 3: HISTORY -->
             <div id="history-view" class="view-container">
                 <div class="bento-grid" style="grid-template-columns: 1fr; grid-template-rows: 1fr;">
-                    <div class="bento-box history-box" style="height: 100%;">
+                    <section class="bento-box schedule-section" style="grid-row: 1 / -1;">
                         <div class="box-header">
                             <h2>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -288,10 +288,10 @@
                             </h2>
                             <div id="historyWeekLabel" class="pool-count">...</div>
                         </div>
-                        <div class="history-list" id="historyList">
-                            <!-- History items injected here -->
+                        <div class="week-grid" id="historyGrid">
+                            <!-- Helper function will inject grid columns here -->
                         </div>
-                    </div>
+                    </section>
                 </div>
             </div>
 

@@ -498,12 +498,18 @@ canvas {
 
 .week-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-auto-flow: column;
+    /* Ensure columns flow horizontally */
+    grid-auto-columns: minmax(280px, 1fr);
+    /* Minimum width for columns */
     gap: var(--bento-inner-gap);
     flex: 1;
     min-height: 0;
-    overflow: hidden;
-    padding-bottom: 0;
+    overflow-x: auto;
+    /* Allow horizontal scroll */
+    overflow-y: hidden;
+    padding-bottom: 8px;
+    /* Space for scrollbar */
 }
 
 .week-grid::-webkit-scrollbar {

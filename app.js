@@ -60,7 +60,7 @@ const elements = {
     totalPostsValue: document.getElementById('totalPostsValue'),
     completionRateValue: document.getElementById('completionRateValue'),
     // History
-    historyList: document.getElementById('historyList'),
+    historyGrid: document.getElementById('historyGrid'),
     historyWeekLabel: document.getElementById('historyWeekLabel'),
     // Context Menu
     cardContextMenu: document.getElementById('cardContextMenu'),
@@ -743,7 +743,7 @@ function switchTab(viewId) {
 }
 
 function renderHistory() {
-    const dates = getCurrentWeekDates();
+    const dates = getCurrentWeekDates(); // Returns 7 days (Sun-Sat)
     const startDate = dates[0];
     const endDate = dates[dates.length - 1];
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -751,51 +751,72 @@ function renderHistory() {
     // Update Header
     elements.historyWeekLabel.textContent = `${months[startDate.getMonth()]} ${startDate.getDate()} - ${months[endDate.getMonth()]} ${endDate.getDate()}`;
 
-    elements.historyList.innerHTML = '';
-    let hasItems = false;
+    // Clear Grid
+    elements.historyGrid.innerHTML = '';
 
+    // Logic: Render 7 columns, just like Scheduler but read-only and filtering for POSTED
     dates.forEach(date => {
         const dateKey = getDateKey(date);
-        const dayCards = appData.schedule[dateKey];
+        const dayCards = appData.schedule[dateKey] || []; // default to empty
 
-        if (dayCards && Array.isArray(dayCards)) {
-            // Filter for POSTED items
-            const postedCards = dayCards.filter(c => c && c.status === CARD_STATUS.POSTED);
+        // Filter for PUBLISHED cards only
+        const postedCards = dayCards.filter(c => c && c.status === CARD_STATUS.POSTED);
 
-            if (postedCards.length > 0) {
-                hasItems = true;
-                postedCards.forEach(card => {
-                    const typeInfo = Object.values(CONTENT_TYPES).find(t => t.id === card.type);
+        // Create Column
+        const column = document.createElement('div');
+        column.className = 'day-column';
+        // Optional: Highlight current day in history too?
+        if (isToday(date)) column.classList.add('today');
 
-                    const item = document.createElement('div');
-                    item.className = 'history-item';
-                    item.innerHTML = `
-                        <div class="history-date">
-                            <span class="h-day">${getDayName(date)}</span>
-                            <span class="h-date">${formatDateShort(date)}</span>
-                        </div>
-                        <div class="history-content">
-                            <div class="history-type ${card.type}">
-                                <span>${typeInfo.icon}</span>
-                                <span>${typeInfo.label}</span>
-                            </div>
-                            <div class="history-desc">${card.description || 'No description'}</div>
-                        </div>
-                        <div class="history-status">Published</div>
-                    `;
-                    elements.historyList.appendChild(item);
-                });
-            }
-        }
-    });
-
-    if (!hasItems) {
-        elements.historyList.innerHTML = `
-            <div style="text-align: center; color: var(--text-muted); padding: 40px;">
-                No published content for this week.
+        // Header
+        column.innerHTML = `
+            <div class="day-header">
+                <div class="day-info">
+                    <span class="day-name">${getDayName(date)}</span>
+                    <span class="day-date">${formatDateShort(date)}</span>
+                </div>
+                <div class="day-progress complete">
+                    ${postedCards.length} Published
+                </div>
             </div>
+            <div class="day-slots history-slots"></div>
         `;
-    }
+
+        const slotsContainer = column.querySelector('.day-slots');
+
+        // Render Cards
+        if (postedCards.length > 0) {
+            postedCards.forEach(card => {
+                const type = Object.values(CONTENT_TYPES).find(t => t.id === card.type);
+                const cardEl = document.createElement('div');
+                // Reuse .content-card class for consistent styling
+                cardEl.className = `content-card ${card.type}`;
+                // Don't make draggable in history
+                cardEl.draggable = false;
+
+                cardEl.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 4px;">
+                         <!-- Reuse delete button style for 'status icon' or keep it simple -->
+                         <span style="font-size: 0.75rem; font-weight: 700; opacity: 0.8;">${type.label}</span>
+                    </div>
+                    <div class="card-description" style="pointer-events: none;">${card.description || ''}</div>
+                `;
+
+                // Add margins since slots container might lack gaps compared to drag grid
+                cardEl.style.marginBottom = '8px';
+                slotsContainer.appendChild(cardEl);
+            });
+        } else {
+            // Empty state for day
+            const emptyEl = document.createElement('div');
+            emptyEl.className = 'empty-slot';
+            emptyEl.style.border = 'none'; // Clean look
+            // emptyEl.textContent = 'No posts';
+            slotsContainer.appendChild(emptyEl);
+        }
+
+        elements.historyGrid.appendChild(column);
+    });
 }
 
 // ===========================
