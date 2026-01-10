@@ -753,6 +753,7 @@ function renderHistory() {
 
     // Clear Grid
     elements.historyGrid.innerHTML = '';
+    elements.historyGrid.className = 'history-week-grid';
 
     // Logic: Render 7 columns, just like Scheduler but read-only and filtering for POSTED
     dates.forEach(date => {

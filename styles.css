@@ -512,6 +512,24 @@ canvas {
     /* Space for scrollbar */
 }
 
+/* Specific strict 7-col grid for history to avoid scroll */
+.history-week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--bento-inner-gap);
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    /* No scroll */
+    padding-bottom: 0;
+}
+
+/* Adjust column min-width inside history to prevent blowout */
+.history-week-grid .day-column {
+    min-width: 0;
+    /* Allow shrinking */
+}
+
 .week-grid::-webkit-scrollbar {
     height: 6px;
 }
