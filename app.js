@@ -94,16 +94,17 @@ function getDayName(date) {
 }
 
 function getWeekDates() {
-    const today = new Date();
-    const dates = [];
+    const now = new Date();
+    const currentDay = now.getDay(); // 0 (Sun) to 6 (Sat)
+    const sundayDate = new Date(now);
+    sundayDate.setDate(now.getDate() - currentDay);
 
-    // Today + 3 days forward (4 days total)
-    for (let i = 0; i <= 3; i++) {
-        const d = new Date(today);
-        d.setDate(d.getDate() + i);
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(sundayDate);
+        d.setDate(sundayDate.getDate() + i);
         dates.push(d);
     }
-
     return dates;
 }
 
