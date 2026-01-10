@@ -1010,6 +1010,34 @@ function setupEventListeners() {
     // Context Menu Actions
     elements.menuDelete.addEventListener('click', handleMenuDelete);
     elements.menuEdit.addEventListener('click', handleMenuEdit);
+
+    // Export Data
+    const exportBtn = document.getElementById('exportBtn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportData);
+    }
+}
+
+function exportData() {
+    const backup = {
+        appData: appData,
+        permanentNotes: permanentNotes,
+        timestamp: new Date().toISOString()
+    };
+
+    // Create downloadable blob
+    const dataStr = JSON.stringify(backup, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    // Create temp link and click it
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", url);
+    downloadAnchorNode.setAttribute("download", `daily_tracker_backup_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    URL.revokeObjectURL(url);
 }
 
 // ===========================

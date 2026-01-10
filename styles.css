@@ -158,14 +158,22 @@ body {
     background-clip: text;
 }
 
-.week-indicator {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    background: var(--bg-card);
-    padding: 8px 16px;
-    border-radius: var(--border-radius-lg);
-    border: 1px solid var(--border-subtle);
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
+
+.week-indicator {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border-glass);
+}
+
 
 /* ===========================
    Bento Grid Layout
@@ -1471,7 +1479,9 @@ canvas {
 
 .menu-item.delete:hover svg {
     color: #ef4444;
-}/* ===========================
+}
+
+/* ===========================
    History List Styles
    =========================== */
 .history-list {
