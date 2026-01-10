@@ -59,6 +59,9 @@ const elements = {
     nextMonthBtn: document.getElementById('nextMonth'),
     totalPostsValue: document.getElementById('totalPostsValue'),
     completionRateValue: document.getElementById('completionRateValue'),
+    // History
+    historyList: document.getElementById('historyList'),
+    historyWeekLabel: document.getElementById('historyWeekLabel'),
     // Context Menu
     cardContextMenu: document.getElementById('cardContextMenu'),
     menuDelete: document.getElementById('menuDelete'),
@@ -99,6 +102,21 @@ function getWeekDates() {
         dates.push(d);
     }
 
+    return dates;
+}
+
+function getCurrentWeekDates() {
+    const now = new Date();
+    const currentDay = now.getDay(); // 0 (Sun) to 6 (Sat)
+    const sundayDate = new Date(now);
+    sundayDate.setDate(now.getDate() - currentDay);
+
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(sundayDate);
+        d.setDate(sundayDate.getDate() + i);
+        dates.push(d);
+    }
     return dates;
 }
 
@@ -668,6 +686,64 @@ function switchTab(viewId) {
 
     if (viewId === 'metrics') {
         renderDashboard();
+    } else if (viewId === 'history') {
+        renderHistory();
+    }
+}
+
+function renderHistory() {
+    const dates = getCurrentWeekDates();
+    const startDate = dates[0];
+    const endDate = dates[dates.length - 1];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    // Update Header
+    elements.historyWeekLabel.textContent = `${months[startDate.getMonth()]} ${startDate.getDate()} - ${months[endDate.getMonth()]} ${endDate.getDate()}`;
+
+    elements.historyList.innerHTML = '';
+    let hasItems = false;
+
+    dates.forEach(date => {
+        const dateKey = getDateKey(date);
+        const dayCards = appData.schedule[dateKey];
+
+        if (dayCards && Array.isArray(dayCards)) {
+            // Filter for POSTED items
+            const postedCards = dayCards.filter(c => c && c.status === CARD_STATUS.POSTED);
+
+            if (postedCards.length > 0) {
+                hasItems = true;
+                postedCards.forEach(card => {
+                    const typeInfo = Object.values(CONTENT_TYPES).find(t => t.id === card.type);
+
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.innerHTML = `
+                        <div class="history-date">
+                            <span class="h-day">${getDayName(date)}</span>
+                            <span class="h-date">${formatDateShort(date)}</span>
+                        </div>
+                        <div class="history-content">
+                            <div class="history-type ${card.type}">
+                                <span>${typeInfo.icon}</span>
+                                <span>${typeInfo.label}</span>
+                            </div>
+                            <div class="history-desc">${card.description || 'No description'}</div>
+                        </div>
+                        <div class="history-status">Published</div>
+                    `;
+                    elements.historyList.appendChild(item);
+                });
+            }
+        }
+    });
+
+    if (!hasItems) {
+        elements.historyList.innerHTML = `
+            <div style="text-align: center; color: var(--text-muted); padding: 40px;">
+                No published content for this week.
+            </div>
+        `;
     }
 }
 

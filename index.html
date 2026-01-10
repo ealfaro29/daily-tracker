@@ -49,6 +49,12 @@
                     </svg>
                     Metrics
                 </button>
+                <button class="tab-btn" data-tab="history">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    History
+                </button>
             </nav>
 
             <div class="week-indicator" id="weekIndicator">
@@ -255,6 +261,26 @@
                             </div>
                         </div>
 
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 3: HISTORY -->
+            <div id="history-view" class="view-container">
+                <div class="bento-grid" style="grid-template-columns: 1fr; grid-template-rows: 1fr;">
+                    <div class="bento-box history-box" style="height: 100%;">
+                        <div class="box-header">
+                            <h2>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Weekly History
+                            </h2>
+                            <div id="historyWeekLabel" class="pool-count">...</div>
+                        </div>
+                        <div class="history-list" id="historyList">
+                            <!-- History items injected here -->
+                        </div>
                     </div>
                 </div>
             </div>

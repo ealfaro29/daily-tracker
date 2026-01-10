@@ -1471,4 +1471,97 @@ canvas {
 
 .menu-item.delete:hover svg {
     color: #ef4444;
+}/* ===========================
+   History List Styles
+   =========================== */
+.history-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 8px;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--border-radius-md);
+    transition: var(--transition-fast);
+}
+
+.history-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--border-light);
+}
+
+.history-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    padding-right: 16px;
+    border-right: 1px solid var(--border-subtle);
+}
+
+.h-day {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+}
+
+.h-date {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.history-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.history-type {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.history-type.post {
+    color: var(--accent-post);
+}
+
+.history-type.promo {
+    color: var(--accent-promo);
+}
+
+.history-type.reel {
+    color: var(--accent-reel);
+}
+
+.history-desc {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.history-status {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--accent-success);
+    margin-left: auto;
 }
