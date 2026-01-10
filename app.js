@@ -796,11 +796,7 @@ function renderHistory() {
                 cardEl.draggable = false;
 
                 cardEl.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 4px;">
-                         <!-- Reuse delete button style for 'status icon' or keep it simple -->
-                         <span style="font-size: 0.75rem; font-weight: 700; opacity: 0.8;">${type.label}</span>
-                    </div>
-                    <div class="card-description" style="pointer-events: none;">${card.description || ''}</div>
+                    <div class="card-description" style="pointer-events: none; margin-top: 0;">${card.description || ''}</div>
                 `;
 
                 // Add margins since slots container might lack gaps compared to drag grid
