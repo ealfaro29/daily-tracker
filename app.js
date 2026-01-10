@@ -674,22 +674,24 @@ function renderWeekGrid() {
 }
 
 function renderMetrics() {
-    const today = new Date();
+    // Use standard Sunday-Saturday week
+    const dates = getCurrentWeekDates();
     let contentCount = 0, reels = 0;
 
-    // Calculate for a full week (7 days) regardless of display
-    for (let i = 0; i < 7; i++) {
-        const d = new Date(today);
-        d.setDate(d.getDate() + i);
+    dates.forEach(d => {
         const dateKey = getDateKey(d);
         const cards = appData.schedule[dateKey] || [];
         cards.forEach(card => {
             if (card) {
+                // Count all types towards content goal, separate reels for reels goal
                 if (card.type === 'post' || card.type === 'promo') contentCount++;
-                else if (card.type === 'reel') reels++;
+                else if (card.type === 'reel') {
+                    reels++;
+                    contentCount++; // Reels also count as content
+                }
             }
         });
-    }
+    });
 
     // Goals: Content = 49 (7/day), Reels = 7 (1/day)
     const contentGoal = 49;
