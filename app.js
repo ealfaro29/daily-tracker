@@ -835,6 +835,7 @@ function renderKPIs() {
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
 
+    let totalScheduledMonth = 0; // Initialize total counter
     let successfulDaysPassed = 0;
     let totalDaysPassed = 0;
 
