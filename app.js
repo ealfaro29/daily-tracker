@@ -844,6 +844,9 @@ function renderKPIs() {
     const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
     for (let day = 1; day <= totalDaysInMonth; day++) {
+        // EXCEPTION: Project started Jan 3rd, 2026. Skip Jan 1 & 2.
+        if (currentYear === 2026 && currentMonth === 0 && day < 3) continue;
+
         // Construct date object for this specific day
         const dateToCheck = new Date(currentYear, currentMonth, day);
         const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
