@@ -836,11 +836,11 @@ function renderKPIs() {
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
 
-    let totalScheduledMonth = 0; // Initialize total counter
-    let successfulDaysPassed = 0;
+    let totalScheduledMonth = 0;
+    let totalScoreSum = 0;
     let totalDaysPassed = 0;
 
-    // Iterate day by day for accurate "days passed" check
+    // Iterate day by day for accurate checks
     const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
     for (let day = 1; day <= totalDaysInMonth; day++) {
@@ -848,8 +848,7 @@ function renderKPIs() {
         const dateToCheck = new Date(currentYear, currentMonth, day);
         const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-        // Only count days that have fully passed (strictly less than today's date, ignoring time)
-        // We set hours to 0 to compare dates purely
+        // Zero out time for pure date comparison
         dateToCheck.setHours(0, 0, 0, 0);
         const todayZero = new Date();
         todayZero.setHours(0, 0, 0, 0);
@@ -858,33 +857,33 @@ function renderKPIs() {
         const dayCards = (appData.schedule[dateKey] || []).filter(c => c !== null);
         totalScheduledMonth += dayCards.length;
 
+        // Logic: Calculate "Score" for PASSSED days only
         if (dateToCheck < todayZero) {
             totalDaysPassed++;
-            // Goal per day is 5
-            if (dayCards.length >= 5) {
-                successfulDaysPassed++;
-            }
+
+            // Daily Goal is 5. 
+            // If they did 3, score is 60%. If they did 5+, score is 100%.
+            const dailyCount = dayCards.length;
+            const dailyScore = Math.min(100, (dailyCount / 5) * 100);
+
+            totalScoreSum += dailyScore;
         }
     }
 
     elements.totalPostsValue.textContent = totalScheduledMonth;
 
-    // Completion Rate Logic:
-    // 1. "Perfect Streak": (Successful Passed Days / Total Passed Days) * 100
-    // If no days have passed yet (start of month), we can say 100% or 0% depending on optimism. Let's say 100% to start fresh.
-    let streakRate = 100;
-    if (totalDaysPassed > 0) {
-        streakRate = Math.round((successfulDaysPassed / totalDaysPassed) * 100);
-    }
+    // Final Metric: Average of Daily Scores for Passed Days
+    let completionRate = 100; // Default to 100% start of month
 
-    // 2. Month Progress: (Successful Passed Days / Total Days in Month) * 100
-    const monthProgress = Math.round((successfulDaysPassed / totalDaysInMonth) * 100);
+    if (totalDaysPassed > 0) {
+        completionRate = Math.round(totalScoreSum / totalDaysPassed);
+    }
 
     // Update UI
     elements.completionRateValue.innerHTML = `
-        ${streakRate}%
+        ${completionRate}%
         <div style="font-size: 0.75rem; color: var(--text-tertiary); font-weight: 400; margin-top: 4px;">
-            ${monthProgress}% of month total
+            Avg of ${totalDaysPassed} days passed
         </div>
     `;
 }
