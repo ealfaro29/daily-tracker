@@ -833,26 +833,56 @@ function renderKPIs() {
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
 
-    let totalScheduledMonth = 0;
-    let successfulDaysMonth = 0;
+    let successfulDaysPassed = 0;
+    let totalDaysPassed = 0;
 
-    // Count cards and successful days for the entire current month
-    Object.keys(appData.schedule).forEach(dateKey => {
-        const date = new Date(dateKey + 'T12:00:00');
-        if (date.getMonth() === currentMonth && date.getFullYear() === currentYear) {
-            const cards = appData.schedule[dateKey].filter(c => c !== null);
-            totalScheduledMonth += cards.length;
-            // Success = 5+ items per day
-            if (cards.length >= 5) successfulDaysMonth++;
+    // Iterate day by day for accurate "days passed" check
+    const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+    for (let day = 1; day <= totalDaysInMonth; day++) {
+        // Construct date object for this specific day
+        const dateToCheck = new Date(currentYear, currentMonth, day);
+        const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+        // Only count days that have fully passed (strictly less than today's date, ignoring time)
+        // We set hours to 0 to compare dates purely
+        dateToCheck.setHours(0, 0, 0, 0);
+        const todayZero = new Date();
+        todayZero.setHours(0, 0, 0, 0);
+
+        // Check content for this day
+        const dayCards = (appData.schedule[dateKey] || []).filter(c => c !== null);
+        totalScheduledMonth += dayCards.length;
+
+        if (dateToCheck < todayZero) {
+            totalDaysPassed++;
+            // Goal per day is 5
+            if (dayCards.length >= 5) {
+                successfulDaysPassed++;
+            }
         }
-    });
+    }
 
     elements.totalPostsValue.textContent = totalScheduledMonth;
 
-    // Monthly Coverage: % of days in the month that have a full schedule (5+ items)
-    const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-    const coverageRate = Math.round((successfulDaysMonth / totalDaysInMonth) * 100);
-    elements.completionRateValue.textContent = `${coverageRate}%`;
+    // Completion Rate Logic:
+    // 1. "Perfect Streak": (Successful Passed Days / Total Passed Days) * 100
+    // If no days have passed yet (start of month), we can say 100% or 0% depending on optimism. Let's say 100% to start fresh.
+    let streakRate = 100;
+    if (totalDaysPassed > 0) {
+        streakRate = Math.round((successfulDaysPassed / totalDaysPassed) * 100);
+    }
+
+    // 2. Month Progress: (Successful Passed Days / Total Days in Month) * 100
+    const monthProgress = Math.round((successfulDaysPassed / totalDaysInMonth) * 100);
+
+    // Update UI
+    elements.completionRateValue.innerHTML = `
+        ${streakRate}%
+        <div style="font-size: 0.75rem; color: var(--text-tertiary); font-weight: 400; margin-top: 4px;">
+            ${monthProgress}% of month total
+        </div>
+    `;
 }
 
 function renderCalendar() {
