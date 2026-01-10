@@ -62,6 +62,8 @@ const elements = {
     // History
     historyGrid: document.getElementById('historyGrid'),
     historyWeekLabel: document.getElementById('historyWeekLabel'),
+    histPrev: document.getElementById('histPrev'),
+    histNext: document.getElementById('histNext'),
     // Context Menu
     cardContextMenu: document.getElementById('cardContextMenu'),
     menuDelete: document.getElementById('menuDelete'),
@@ -1105,6 +1107,20 @@ function setupEventListeners() {
         dashboardMonth.setMonth(dashboardMonth.getMonth() + 1);
         renderCalendar();
     });
+
+    // History Nav
+    if (elements.histPrev) {
+        elements.histPrev.addEventListener('click', () => {
+            historyOffset--;
+            renderHistory();
+        });
+    }
+    if (elements.histNext) {
+        elements.histNext.addEventListener('click', () => {
+            historyOffset++;
+            renderHistory();
+        });
+    }
 
     // Context Menu Actions
     elements.menuDelete.addEventListener('click', handleMenuDelete);
