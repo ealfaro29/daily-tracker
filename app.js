@@ -131,37 +131,88 @@ function isToday(date) {
 // Data Management (API-First with LocalStorage Fallback)
 // ===========================
 // ===========================
-// Data Management (LocalStorage Based)
+// Imports & Firebase Config
+// ===========================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyD9Q9b_RkQ5KCUSoNdqs8W2C3jrB6Q_pCQ",
+    authDomain: "daily-tracker-ee82c.firebaseapp.com",
+    projectId: "daily-tracker-ee82c",
+    storageBucket: "daily-tracker-ee82c.firebasestorage.app",
+    messagingSenderId: "240727869932",
+    appId: "1:240727869932:web:09e2f501e2674d65a698c9",
+    measurementId: "G-X6CE1KMD4H"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const DATA_DOC_ID = "global-tracker-data"; // Single document for ELI5 simplicity
+
+// ===========================
+// Data Management (Firebase Firestore)
 // ===========================
 
-function loadData() {
-    // Load App Data
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-        try {
-            appData = JSON.parse(stored);
-        } catch (e) {
-            console.error('Error parsing stored data', e);
-            // Keep default empty state
-        }
-    }
+async function loadData() {
+    try {
+        const docRef = doc(db, "daily-tracker-data", DATA_DOC_ID);
+        const docSnap = await getDoc(docRef);
 
-    // Load Notes
-    const storedNotes = localStorage.getItem(NOTES_KEY);
-    permanentNotes = storedNotes || '';
+        if (docSnap.exists()) {
+            // REMOTE DATA EXISTS -> Use it (Source of Truth)
+            const data = docSnap.data();
+            appData = data.appData || { pool: [], schedule: {} };
+            permanentNotes = data.permanentNotes || '';
+            console.log("Data loaded from Firebase");
+        } else {
+            // NO REMOTE DATA -> Check LocalStorage for Migration
+            console.log("No Firebase data found. Checking local storage for migration...");
+            const localData = localStorage.getItem(STORAGE_KEY);
+            const localNotes = localStorage.getItem(NOTES_KEY);
+
+            if (localData || localNotes) {
+                // MIGRATE: Upload Local -> Firebase
+                if (localData) appData = JSON.parse(localData);
+                if (localNotes) permanentNotes = localNotes;
+
+                await saveData(); // Save to Firebase immediately
+                console.log("Migration successful: Local data uploaded to Firebase.");
+            }
+        }
+    } catch (e) {
+        console.error("Error loading/migrating data:", e);
+        // Fallback to local if offline or error, just to show something
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) appData = JSON.parse(stored);
+    }
 
     // Initial Render
     elements.permanentNotes.value = permanentNotes;
     render();
 }
 
-function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+async function saveData() {
+    // Save to Firestore
+    try {
+        await setDoc(doc(db, "daily-tracker-data", DATA_DOC_ID), {
+            appData: appData,
+            permanentNotes: permanentNotes,
+            lastUpdated: new Date().toISOString()
+        });
+        // Keep LocalStorage as a backup/cache
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    } catch (e) {
+        console.error("Error saving to Firebase:", e);
+    }
 }
 
-function saveNotes() {
-    localStorage.setItem(NOTES_KEY, elements.permanentNotes.value);
+async function saveNotes() {
     permanentNotes = elements.permanentNotes.value;
+    // Debounce or just save directly (Firestore is fast enough for notes usually)
+    await saveData();
+    localStorage.setItem(NOTES_KEY, permanentNotes);
     showNotesSaved();
 }
 
