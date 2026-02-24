@@ -98,7 +98,9 @@ const elements = {
     inspirationGrid: document.getElementById('inspirationGrid'),
     inspirationTitle: document.getElementById('inspirationTitle'),
     inspirationUrl: document.getElementById('inspirationUrl'),
-    addInspirationBtn: document.getElementById('addInspirationBtn')
+    addInspirationBtn: document.getElementById('addInspirationBtn'),
+    syncStatus: document.getElementById('syncStatus'),
+    syncText: document.querySelector('#syncStatus .sync-text')
 };
 
 // ===========================
@@ -177,6 +179,7 @@ const DATA_DOC_ID = "global-tracker-data"; // Single document for ELI5 simplicit
 // ===========================
 
 async function loadData() {
+    updateSyncStatus('pending');
     try {
         const docRef = doc(db, "daily-tracker-data", DATA_DOC_ID);
         const docSnap = await getDoc(docRef);
@@ -187,8 +190,10 @@ async function loadData() {
             appData = data.appData || {};
             ensureAppDataIntegrity();
             permanentNotes = data.permanentNotes || '';
+            updateSyncStatus('online');
             console.log("Data loaded from Firebase");
         } else {
+            updateSyncStatus('offline', 'No data found');
             // NO REMOTE DATA -> Check LocalStorage for Migration
             console.log("No Firebase data found. Checking local storage for migration...");
             const localData = localStorage.getItem(STORAGE_KEY);
@@ -223,6 +228,7 @@ async function loadData() {
 }
 
 async function saveData() {
+    updateSyncStatus('pending');
     // Save to Firestore
     try {
         await setDoc(doc(db, "daily-tracker-data", DATA_DOC_ID), {
@@ -232,8 +238,28 @@ async function saveData() {
         });
         // Keep LocalStorage as a backup/cache
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        updateSyncStatus('online');
     } catch (e) {
         console.error("Error saving to Firebase:", e);
+        updateSyncStatus('offline', e.message);
+    }
+}
+
+function updateSyncStatus(status, errorMsg = '') {
+    if (!elements.syncStatus) return;
+
+    elements.syncStatus.classList.remove('online', 'offline', 'pending');
+    elements.syncStatus.classList.add(status);
+
+    if (status === 'online') {
+        elements.syncText.textContent = 'Synced';
+        elements.syncStatus.title = 'Cloud Sync Active';
+    } else if (status === 'pending') {
+        elements.syncText.textContent = 'Saving...';
+        elements.syncStatus.title = 'Uploading to Cloud...';
+    } else if (status === 'offline') {
+        elements.syncText.textContent = 'Error';
+        elements.syncStatus.title = 'Sync Failed: ' + errorMsg;
     }
 }
 
@@ -801,11 +827,15 @@ function render() {
     renderPool();
     renderWeekGrid();
     renderMetrics();
+    renderInspiration();
 
     // Also update dashboard if active
     if (currentView === 'metrics') {
         renderDashboard();
     }
+
+    // Debug Expose
+    window.appData = appData;
 }
 
 // ===========================
