@@ -96,6 +96,7 @@ const elements = {
     clearPoolBtn: document.getElementById('clearPoolBtn'),
     // Inspiration Board
     inspirationGrid: document.getElementById('inspirationGrid'),
+    inspirationTitle: document.getElementById('inspirationTitle'),
     inspirationUrl: document.getElementById('inspirationUrl'),
     addInspirationBtn: document.getElementById('addInspirationBtn')
 };
@@ -873,11 +874,16 @@ function renderInspiration() {
 }
 
 async function addInspiration() {
+    let titleInput = elements.inspirationTitle.value.trim();
     let url = elements.inspirationUrl.value.trim();
-    if (!url) return;
+
+    if (!titleInput || !url) {
+        alert('Por favor agrega un nombre y un link');
+        return;
+    }
 
     // Remove any trailing slashes or spaces
-    url = url.replace(/\/+$/, '');
+    url = url.replace(/\/+$/, '').trim();
 
     // Force basic protocol if totally missing (e.g. "x.com")
     if (!url.includes('://')) {
@@ -886,14 +892,6 @@ async function addInspiration() {
 
     try {
         const urlObj = new URL(url);
-        let title = urlObj.hostname.replace('www.', '');
-
-        // Specifc labels for social media
-        if (title.includes('x.com') || title.includes('twitter.com')) title = 'X / Twitter';
-        else if (title.includes('instagram.com')) title = 'Instagram';
-        else if (title.includes('tiktok.com')) title = 'TikTok';
-        else if (title.includes('pinterest.com')) title = 'Pinterest';
-        else if (title.includes('youtube.com') || title.includes('youtu.be')) title = 'YouTube';
 
         // Critical Safety Check - Force allocation if missing
         if (!appData) appData = { ideas: [] };
@@ -902,11 +900,12 @@ async function addInspiration() {
         const newIdea = {
             id: generateId(),
             url: url,
-            title: title,
+            title: titleInput,
             createdAt: new Date().toISOString()
         };
 
         appData.ideas.unshift(newIdea);
+        elements.inspirationTitle.value = '';
         elements.inspirationUrl.value = '';
         renderInspiration();
         await saveData();
@@ -1346,6 +1345,11 @@ function setupEventListeners() {
     if (elements.inspirationUrl) {
         elements.inspirationUrl.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') addInspiration();
+        });
+    }
+    if (elements.inspirationTitle) {
+        elements.inspirationTitle.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') elements.inspirationUrl.focus();
         });
     }
 
