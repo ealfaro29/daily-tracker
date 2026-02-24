@@ -36,6 +36,16 @@ let draggedCard = null;
 let globalOffset = 0;
 let currentDate = new Date();
 
+function ensureAppDataIntegrity() {
+    if (!appData || typeof appData !== 'object') {
+        appData = { pool: [], schedule: {}, ideas: [] };
+    }
+    if (!Array.isArray(appData.pool)) appData.pool = [];
+    if (!appData.schedule || typeof appData.schedule !== 'object') appData.schedule = {};
+    if (!Array.isArray(appData.ideas)) appData.ideas = [];
+    return appData;
+}
+
 // ===========================
 // DOM Elements
 // ===========================
@@ -173,8 +183,8 @@ async function loadData() {
         if (docSnap.exists()) {
             // REMOTE DATA EXISTS -> Use it (Source of Truth)
             const data = docSnap.data();
-            appData = data.appData || { pool: [], schedule: {}, ideas: [] };
-            if (!appData.ideas) appData.ideas = [];
+            appData = data.appData || {};
+            ensureAppDataIntegrity();
             permanentNotes = data.permanentNotes || '';
             console.log("Data loaded from Firebase");
         } else {
@@ -187,7 +197,7 @@ async function loadData() {
                 // MIGRATE: Upload Local -> Firebase
                 if (localData) {
                     appData = JSON.parse(localData);
-                    if (!appData.ideas) appData.ideas = [];
+                    ensureAppDataIntegrity();
                 }
                 if (localNotes) permanentNotes = localNotes;
 
@@ -199,11 +209,15 @@ async function loadData() {
         console.error("Error loading/migrating data:", e);
         // Fallback to local if offline or error, just to show something
         const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) appData = JSON.parse(stored);
+        if (stored) {
+            appData = JSON.parse(stored);
+            ensureAppDataIntegrity();
+        }
     }
 
     // Initial Render
-    elements.permanentNotes.value = permanentNotes;
+    ensureAppDataIntegrity();
+    if (elements.permanentNotes) elements.permanentNotes.value = permanentNotes;
     render();
 }
 
@@ -880,6 +894,10 @@ async function addInspiration() {
         else if (title.includes('tiktok.com')) title = 'TikTok';
         else if (title.includes('pinterest.com')) title = 'Pinterest';
         else if (title.includes('youtube.com') || title.includes('youtu.be')) title = 'YouTube';
+
+        // Critical Safety Check - Force allocation if missing
+        if (!appData) appData = { ideas: [] };
+        if (!appData.ideas) appData.ideas = [];
 
         const newIdea = {
             id: generateId(),
