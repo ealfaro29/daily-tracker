@@ -1,0 +1,17 @@
+{
+    "manifest_version": 3,
+    "name": "Daily Tracker Clipper",
+    "version": "1.0",
+    "description": "Capture inspiration links directly to your Daily Tracker",
+    "permissions": [
+        "activeTab",
+        "storage"
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": "icons/icon128.png"
+    },
+    "icons": {
+        "128": "icons/icon128.png"
+    }
+}
