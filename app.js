@@ -1051,20 +1051,20 @@ function renderCharts() {
                 {
                     label: 'Posts',
                     data: [posts],
-                    backgroundColor: '#6366f1',
-                    borderRadius: 4
+                    backgroundColor: '#007AFF',
+                    borderRadius: 6
                 },
                 {
                     label: 'Promos',
                     data: [promos],
-                    backgroundColor: '#a855f7',
-                    borderRadius: 4
+                    backgroundColor: '#5856D6',
+                    borderRadius: 6
                 },
                 {
                     label: 'Reels',
                     data: [reels],
-                    backgroundColor: '#ec4899',
-                    borderRadius: 4
+                    backgroundColor: '#FF2D55',
+                    borderRadius: 6
                 }
             ]
         },
@@ -1077,9 +1077,11 @@ function renderCharts() {
                     display: false
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    titleColor: '#e2e8f0',
-                    bodyColor: '#94a3b8',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    titleColor: '#000000',
+                    bodyColor: '#3C3C43',
+                    borderColor: 'rgba(0, 0, 0, 0.1)',
+                    borderWidth: 1,
                     padding: 12,
                     displayColors: true
                 }
@@ -1121,12 +1123,14 @@ function renderCharts() {
             datasets: [{
                 label: 'Volume',
                 data: weeklyVolume,
-                borderColor: '#22c55e',
-                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                borderColor: '#34C759',
+                backgroundColor: 'rgba(52, 199, 89, 0.1)',
                 tension: 0.4,
                 fill: true,
-                pointRadius: 4,
-                pointBackgroundColor: '#22c55e'
+                pointRadius: 5,
+                pointBackgroundColor: '#34C759',
+                pointBorderColor: '#FFFFFF',
+                pointBorderWidth: 2
             }]
         },
         options: {
@@ -1140,12 +1144,12 @@ function renderCharts() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: { color: '#64748b' }
+                    grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                    ticks: { color: '#8E8E93' }
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { color: '#64748b' }
+                    ticks: { color: '#8E8E93' }
                 }
             }
         }
