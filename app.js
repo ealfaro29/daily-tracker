@@ -865,8 +865,8 @@ async function addInspiration() {
     // Remove any trailing slashes or spaces
     url = url.replace(/\/+$/, '');
 
-    // Normalize URL: If no protocol, add https://
-    if (!/^https?:\/\//i.test(url)) {
+    // Force basic protocol if totally missing (e.g. "x.com")
+    if (!url.includes('://')) {
         url = 'https://' + url;
     }
 
@@ -875,10 +875,11 @@ async function addInspiration() {
         let title = urlObj.hostname.replace('www.', '');
 
         // Specifc labels for social media
-        if (title === 'x.com' || title === 'twitter.com') title = 'X / Twitter';
-        if (title === 'instagram.com') title = 'Instagram';
-        if (title === 'tiktok.com') title = 'TikTok';
-        if (title === 'pinterest.com') title = 'Pinterest';
+        if (title.includes('x.com') || title.includes('twitter.com')) title = 'X / Twitter';
+        else if (title.includes('instagram.com')) title = 'Instagram';
+        else if (title.includes('tiktok.com')) title = 'TikTok';
+        else if (title.includes('pinterest.com')) title = 'Pinterest';
+        else if (title.includes('youtube.com') || title.includes('youtu.be')) title = 'YouTube';
 
         const newIdea = {
             id: generateId(),
@@ -892,8 +893,8 @@ async function addInspiration() {
         renderInspiration();
         await saveData();
     } catch (e) {
-        console.error("Link err:", e);
-        alert('Por favor inserta un link válido');
+        console.error("Link Error Detail:", e, "Input URL:", url);
+        alert('Error al procesar el link: ' + e.message + '. Asegúrate de que sea un link válido.');
     }
 }
 
