@@ -1390,10 +1390,9 @@ function exportData() {
 // ===========================
 // Initialize
 // ===========================
-function init() {
-    loadData();
+async function init() {
+    await loadData();
     setupEventListeners();
-    render();
 }
 
 document.addEventListener('DOMContentLoaded', init);
