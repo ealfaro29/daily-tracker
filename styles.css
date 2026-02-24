@@ -1806,6 +1806,80 @@ canvas {
     height: 40px;
 }
 
+/* Modal Fields & Category Selector */
+.modal-field {
+    margin-bottom: 20px;
+}
+
+.modal-field label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 8px;
+    letter-spacing: 0.8px;
+}
+
+.modal-field input {
+    width: 100%;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--border-radius-md);
+    padding: 14px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.modal-field input:focus {
+    background: white;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+}
+
+.category-selector {
+    display: flex;
+    gap: 8px;
+}
+
+.cat-opt {
+    flex: 1;
+    padding: 12px;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-subtle);
+    background: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cat-opt:hover {
+    background: var(--bg-primary);
+    transform: translateY(-2px);
+}
+
+.cat-opt.active {
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.cat-opt.active[data-type="post"] {
+    background: var(--gradient-post);
+}
+
+.cat-opt.active[data-type="reel"] {
+    background: var(--gradient-reel);
+}
+
+.cat-opt.active[data-type="promo"] {
+    background: var(--gradient-promo);
+}
+
 /* ===========================
    Inspiration Board Layout (Pinterest Style)
    =========================== */
@@ -1995,6 +2069,35 @@ canvas {
     font-weight: 600;
     color: var(--text-tertiary);
     text-transform: uppercase;
+}
+
+.ins-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    width: fit-content;
+}
+
+.ins-type-badge.post {
+    background: rgba(0, 122, 255, 0.1);
+    color: var(--accent-post);
+}
+
+.ins-type-badge.reel {
+    background: rgba(255, 45, 85, 0.1);
+    color: var(--accent-reel);
+}
+
+.ins-type-badge.promo {
+    background: rgba(88, 86, 214, 0.1);
+    color: var(--accent-promo);
 }
 
 .ins-content {

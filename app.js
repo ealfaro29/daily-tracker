@@ -96,9 +96,13 @@ const elements = {
     clearPoolBtn: document.getElementById('clearPoolBtn'),
     // Inspiration Board
     inspirationGrid: document.getElementById('inspirationGrid'),
-    inspirationTitle: document.getElementById('inspirationTitle'),
-    inspirationUrl: document.getElementById('inspirationUrl'),
-    addInspirationBtn: document.getElementById('addInspirationBtn'),
+    inspirationMainInput: document.getElementById('inspirationMainInput'),
+    inspirationModalOverlay: document.getElementById('inspirationModalOverlay'),
+    insModalTitle: document.getElementById('insModalTitle'),
+    insModalCategorySelector: document.getElementById('insModalCategorySelector'),
+    insModalSaveBtn: document.getElementById('insModalSaveBtn'),
+    insModalCancelBtn: document.getElementById('insModalCancelBtn'),
+    insModalCloseBtn: document.getElementById('insModalCloseBtn'),
     syncStatus: document.getElementById('syncStatus'),
     syncText: document.querySelector('#syncStatus .sync-text')
 };
@@ -906,17 +910,30 @@ function renderInspiration() {
         const card = document.createElement('div');
         card.className = 'inspiration-card';
 
-        const domain = new URL(idea.url).hostname.replace('www.', '');
-        const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+        let domain = '';
+        let favicon = '';
+        if (idea.url) {
+            try {
+                domain = new URL(idea.url).hostname.replace('www.', '');
+                favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+            } catch (e) {
+                domain = 'Referencia';
+            }
+        }
+
+        const typeIcon = idea.type === 'reel' ? '🎬' : idea.type === 'promo' ? '📢' : '📷';
 
         card.innerHTML = `
-            <div class="ins-preview">
-                <img src="${favicon}" alt="icon" onerror="this.style.display='none'">
-                <span class="ins-domain">${domain}</span>
-            </div>
+            ${favicon ? `
+                <div class="ins-preview">
+                    <img src="${favicon}" alt="icon" onerror="this.style.display='none'">
+                    <span class="ins-domain">${domain}</span>
+                </div>
+            ` : ''}
             <div class="ins-content">
+                <div class="ins-type-badge ${idea.type || 'post'}">${typeIcon} ${idea.type || 'post'}</div>
                 <div class="ins-title">${idea.title || 'Idea Sin Título'}</div>
-                <a href="${idea.url}" target="_blank" class="ins-url">${idea.url}</a>
+                ${idea.url ? `<a href="${idea.url}" target="_blank" class="ins-url">${idea.url}</a>` : ''}
             </div>
             <div class="ins-actions">
                 <button class="ins-send-btn" onclick="moveIdeaToPool('${idea.id}')">Mandarlo al Pool</button>
@@ -931,46 +948,72 @@ function renderInspiration() {
     });
 }
 
+let tempInspirationData = {
+    value: '',
+    type: 'post'
+};
+
+function showInspirationModal(initialValue) {
+    tempInspirationData.value = initialValue;
+    tempInspirationData.type = 'post'; // Default
+
+    // If it looks like a URL, try to pre-fill name or at least set context
+    elements.insModalTitle.value = '';
+    if (initialValue.includes('http') || initialValue.includes('.')) {
+        // Basic cleanup for placeholder
+        try {
+            const url = initialValue.startsWith('http') ? initialValue : 'https://' + initialValue;
+            const domain = new URL(url).hostname.replace('www.', '');
+            elements.insModalTitle.placeholder = `Ref: ${domain}`;
+        } catch (e) { }
+    } else {
+        elements.insModalTitle.value = initialValue;
+    }
+
+    // Reset selector
+    const options = elements.insModalCategorySelector.querySelectorAll('.cat-opt');
+    options.forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.type === 'post');
+    });
+
+    elements.inspirationModalOverlay.classList.add('show');
+    elements.insModalTitle.focus();
+}
+
+function hideInspirationModal() {
+    elements.inspirationModalOverlay.classList.remove('show');
+}
+
 async function addInspiration() {
-    let titleInput = elements.inspirationTitle.value.trim();
-    let url = elements.inspirationUrl.value.trim();
+    const title = elements.insModalTitle.value.trim() || elements.insModalTitle.placeholder;
+    let rawValue = tempInspirationData.value.trim();
+    const type = tempInspirationData.type;
 
-    if (!titleInput || !url) {
-        alert('Por favor agrega un nombre y un link');
-        return;
+    let url = '';
+    // Decide if it's a URL or just text
+    if (rawValue.includes('http') || rawValue.includes('.')) {
+        url = rawValue;
+        if (!url.includes('://')) url = 'https://' + url;
     }
 
-    // Remove any trailing slashes or spaces
-    url = url.replace(/\/+$/, '').trim();
+    // Critical Safety Check - Force allocation if missing
+    if (!appData) appData = { ideas: [] };
+    if (!appData.ideas) appData.ideas = [];
 
-    // Force basic protocol if totally missing (e.g. "x.com")
-    if (!url.includes('://')) {
-        url = 'https://' + url;
-    }
+    const newIdea = {
+        id: generateId(),
+        title: title,
+        url: url,
+        content: url ? '' : rawValue,
+        type: type,
+        createdAt: new Date().toISOString()
+    };
 
-    try {
-        const urlObj = new URL(url);
-
-        // Critical Safety Check - Force allocation if missing
-        if (!appData) appData = { ideas: [] };
-        if (!appData.ideas) appData.ideas = [];
-
-        const newIdea = {
-            id: generateId(),
-            url: url,
-            title: titleInput,
-            createdAt: new Date().toISOString()
-        };
-
-        appData.ideas.unshift(newIdea);
-        elements.inspirationTitle.value = '';
-        elements.inspirationUrl.value = '';
-        renderInspiration();
-        await saveData();
-    } catch (e) {
-        console.error("Link Error Detail:", e, "Input URL:", url);
-        alert('Error al procesar el link: ' + e.message + '. Asegúrate de que sea un link válido.');
-    }
+    appData.ideas.unshift(newIdea);
+    renderInspiration();
+    hideInspirationModal();
+    elements.inspirationMainInput.value = '';
+    await saveData();
 }
 
 async function deleteIdea(id) {
@@ -986,7 +1029,7 @@ async function moveIdeaToPool(id) {
     // Create a new card in the pool
     const newCard = {
         id: generateId(),
-        type: 'post', // Default to post
+        type: idea.type || 'post', // Use the idea's selected type
         description: idea.title,
         url: idea.url, // Store the reference link
         status: CARD_STATUS.SCHEDULED,
@@ -1397,17 +1440,37 @@ function setupEventListeners() {
     elements.menuEdit.addEventListener('click', handleMenuEdit);
 
     // Inspiration
-    if (elements.addInspirationBtn) {
-        elements.addInspirationBtn.addEventListener('click', addInspiration);
+    if (elements.inspirationMainInput) {
+        elements.inspirationMainInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && elements.inspirationMainInput.value.trim()) {
+                showInspirationModal(elements.inspirationMainInput.value);
+            }
+        });
     }
-    if (elements.inspirationUrl) {
-        elements.inspirationUrl.addEventListener('keypress', (e) => {
+
+    // Inspiration Modal Listeners
+    if (elements.insModalSaveBtn) {
+        elements.insModalSaveBtn.addEventListener('click', addInspiration);
+    }
+    if (elements.insModalCancelBtn) {
+        elements.insModalCancelBtn.addEventListener('click', hideInspirationModal);
+    }
+    if (elements.insModalCloseBtn) {
+        elements.insModalCloseBtn.addEventListener('click', hideInspirationModal);
+    }
+    if (elements.insModalTitle) {
+        elements.insModalTitle.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') addInspiration();
         });
     }
-    if (elements.inspirationTitle) {
-        elements.inspirationTitle.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') elements.inspirationUrl.focus();
+    if (elements.insModalCategorySelector) {
+        const catButtons = elements.insModalCategorySelector.querySelectorAll('.cat-opt');
+        catButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                catButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                tempInspirationData.type = btn.dataset.type;
+            });
         });
     }
 
