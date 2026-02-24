@@ -16,14 +16,34 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             selection: info.selectionText || ""
         };
 
-        // Send message to content script to show the modal
-        chrome.tabs.sendMessage(tab.id, {
-            action: "open-clipper-modal",
-            data: data
-        }).catch(err => {
-            // In case content script is not injected (e.g. extension just installed)
-            console.error("Content script not ready:", err);
-            // Fallback: inject it manually? No, manifest matches <all_urls>
-        });
+        // Helper to send message
+        const sendCapture = () => {
+            chrome.tabs.sendMessage(tab.id, {
+                action: "open-clipper-modal",
+                data: data
+            }).catch(err => {
+                console.error("Content script still not ready, injecting manually...");
+                chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    files: ["content-script.js"]
+                }).then(() => {
+                    // Try again after injection
+                    setTimeout(() => {
+                        chrome.tabs.sendMessage(tab.id, {
+                            action: "open-clipper-modal",
+                            data: data
+                        });
+                    }, 100);
+                }).catch(e => console.error("Manual injection failed:", e));
+            });
+        };
+
+        // Don't run on restricted pages
+        if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('edge://') || tab.url.startsWith('about:')) {
+            console.warn("Scripting restricted on this page.");
+            return;
+        }
+
+        sendCapture();
     }
 });
