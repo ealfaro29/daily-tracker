@@ -108,7 +108,7 @@ body {
 .app-container {
     width: 100%;
     margin: 0;
-    padding: 0 40px;
+    padding: 0;
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -119,12 +119,13 @@ body {
    Header
    =========================== */
 .header {
-    padding: var(--grid-margin) 0;
+    padding: 12px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--border-subtle);
     flex-shrink: 0;
+    background: var(--bg-secondary);
 }
 
 .logo {
@@ -201,12 +202,12 @@ body {
    =========================== */
 .bento-grid {
     display: grid;
-    grid-template-columns: 280px 1fr;
+    grid-template-columns: 320px 1fr;
     grid-template-rows: 1fr auto;
     gap: var(--bento-gap);
     flex: 1;
     min-height: 0;
-    padding: var(--grid-margin) 0;
+    padding: var(--bento-gap) 0;
     overflow: hidden;
     width: 100%;
 }
@@ -1005,12 +1006,12 @@ canvas {
 /* ===========================
    Tabs System & Dashboard
    =========================== */
-/* Main Content Wrapper */
 .main-content {
     flex: 1;
     min-height: 0;
     position: relative;
     overflow: hidden;
+    width: 100%;
 }
 
 /* ===========================
@@ -1019,6 +1020,7 @@ canvas {
 .view-container {
     display: none;
     height: 100%;
+    width: 100%;
     flex-direction: column;
 }
 
@@ -1076,7 +1078,7 @@ canvas {
     gap: var(--bento-gap);
     flex: 1;
     min-height: 0;
-    padding: var(--grid-margin) 0;
+    padding: var(--bento-gap) 0;
     width: 100%;
 }
 
@@ -1718,7 +1720,7 @@ canvas {
     gap: var(--bento-gap);
     height: 100%;
     width: 100%;
-    padding: var(--grid-margin) 0;
+    padding: var(--bento-gap) 0;
 }
 
 .inspiration-input-box {
@@ -1763,35 +1765,53 @@ canvas {
 }
 
 .pinterest-grid {
-    column-count: 6;
+    column-count: 8;
     column-gap: 24px;
 }
 
-@media (max-width: 1800px) {
+@media (max-width: 2400px) {
+    .pinterest-grid {
+        column-count: 8;
+    }
+}
+
+@media (max-width: 2000px) {
+    .pinterest-grid {
+        column-count: 7;
+    }
+}
+
+@media (max-width: 1700px) {
+    .pinterest-grid {
+        column-count: 6;
+    }
+}
+
+@media (max-width: 1400px) {
     .pinterest-grid {
         column-count: 5;
     }
 }
 
-@media (max-width: 1500px) {
+@media (max-width: 1100px) {
     .pinterest-grid {
         column-count: 4;
     }
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 800px) {
     .pinterest-grid {
         column-count: 3;
     }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 550px) {
     .pinterest-grid {
         column-count: 2;
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 400px) {
     .pinterest-grid {
         column-count: 1;
     }

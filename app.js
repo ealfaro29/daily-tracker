@@ -859,15 +859,31 @@ function renderInspiration() {
 }
 
 async function addInspiration() {
-    const url = elements.inspirationUrl.value.trim();
+    let url = elements.inspirationUrl.value.trim();
     if (!url) return;
+
+    // Remove any trailing slashes or spaces
+    url = url.replace(/\/+$/, '');
+
+    // Normalize URL: If no protocol, add https://
+    if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+    }
 
     try {
         const urlObj = new URL(url);
+        let title = urlObj.hostname.replace('www.', '');
+
+        // Specifc labels for social media
+        if (title === 'x.com' || title === 'twitter.com') title = 'X / Twitter';
+        if (title === 'instagram.com') title = 'Instagram';
+        if (title === 'tiktok.com') title = 'TikTok';
+        if (title === 'pinterest.com') title = 'Pinterest';
+
         const newIdea = {
             id: generateId(),
             url: url,
-            title: urlObj.hostname.replace('www.', ''),
+            title: title,
             createdAt: new Date().toISOString()
         };
 
@@ -876,6 +892,7 @@ async function addInspiration() {
         renderInspiration();
         await saveData();
     } catch (e) {
+        console.error("Link err:", e);
         alert('Por favor inserta un link válido');
     }
 }
