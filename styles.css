@@ -27,10 +27,10 @@
     --border-light: rgba(0, 0, 0, 0.1);
     --border-glass: rgba(0, 0, 0, 0.08);
 
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08);
-    --shadow-premium: 0 0 20px rgba(0, 122, 255, 0.05);
+    --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.03);
+    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.08);
+    --shadow-premium: 0 15px 45px rgba(0, 122, 255, 0.08);
 
     --gradient-primary: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
     --gradient-post: linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%);
@@ -264,9 +264,9 @@ body {
 
 .bento-box {
     background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-subtle);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(0, 0, 0, 0.05);
     border-radius: var(--border-radius-lg);
     padding: var(--bento-padding);
     display: flex;
@@ -274,7 +274,7 @@ body {
     box-shadow: var(--shadow-md);
     position: relative;
     overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .bento-box:hover {
@@ -935,77 +935,79 @@ canvas {
 
 .metrics-grid {
     display: flex;
-    gap: 20px;
+    gap: 16px;
     flex: 1;
-    align-items: center;
+    align-items: stretch;
 }
 
 .metric-card {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: 10px;
-    padding: 16px 20px;
-    background: #FFFFFF;
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--border-radius-md);
-    transition: all 0.3s ease;
-    height: 90px;
+    justify-content: space-between;
+    padding: 18px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    border-radius: var(--border-radius-lg);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 110px;
+    position: relative;
 }
 
 .metric-card:hover {
-    background: var(--bg-tertiary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
+    background: #FFFFFF;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
 }
 
 .metric-top {
     display: flex;
+    align-items: flex-start;
     justify-content: space-between;
-    align-items: center;
     width: 100%;
 }
 
 .metric-icon {
-    width: 48px;
-    height: 48px;
+    width: 38px;
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-subtle);
+    background: #FFFFFF;
     border-radius: 12px;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 .metric-info {
-    flex: 1;
+    text-align: right;
 }
 
 .metric-label {
     display: block;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: var(--text-tertiary);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 2px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
 }
 
 .metric-value {
-    font-size: 1.3rem;
+    font-size: 1.6rem;
     font-weight: 800;
     color: var(--text-primary);
     font-variant-numeric: tabular-nums;
-    line-height: 1;
+    letter-spacing: -0.5px;
 }
 
 .metric-bar {
     width: 100%;
-    height: 8px;
-    background: var(--bg-tertiary);
-    border-radius: 4px;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
     overflow: hidden;
-    position: relative;
+    margin-top: 12px;
 }
 
 .metric-fill {
@@ -1074,27 +1076,27 @@ canvas {
 
 .notes-section textarea {
     flex: 1;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--border-glass);
-    border-radius: var(--border-radius-md);
-    padding: 14px;
-    color: var(--text-primary);
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    font-size: 1rem;
     font-family: inherit;
-    font-size: 0.85rem;
-    line-height: 1.5;
+    color: var(--text-primary);
     resize: none;
+    line-height: 1.6;
     outline: none;
-    transition: var(--transition-normal);
 }
 
 .notes-section textarea::placeholder {
     color: var(--text-muted);
+    font-weight: 400;
 }
 
-.notes-section textarea:focus {
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+.notes-section:focus-within {
+    background: #FFFFFF;
 }
+
 
 /* ===========================
    Tabs System & Dashboard
@@ -1818,43 +1820,66 @@ canvas {
 
 .inspiration-input-box {
     flex-shrink: 0;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.4);
 }
 
 .link-input-group {
     display: flex;
     gap: 12px;
+    background: white;
+    padding: 8px;
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
 .link-input-group input {
     flex: 1;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--border-radius-md);
-    padding: 12px 16px;
-    font-size: 1rem;
+    background: transparent;
+    border: none;
+    padding: 12px 18px;
+    font-size: 0.95rem;
     color: var(--text-primary);
     outline: none;
-    transition: border-color 0.2s ease;
 }
 
-.link-input-group input:focus {
-    border-color: var(--accent-primary);
+.link-input-group input::placeholder {
+    color: var(--text-muted);
 }
 
-.link-input-group .action-btn {
-    min-height: 48px;
+.premium-btn {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-lg);
     padding: 0 24px;
-    flex-direction: row;
     font-weight: 600;
-    text-transform: none;
-    letter-spacing: normal;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.premium-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4);
+    filter: brightness(1.1);
+}
+
+.premium-btn:active {
+    transform: translateY(0);
 }
 
 .inspiration-grid-container {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: 40px;
-    mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+    padding: 8px 4px 40px 4px;
+    mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
 }
 
 .pinterest-grid {
