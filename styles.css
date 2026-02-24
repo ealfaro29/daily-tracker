@@ -413,22 +413,41 @@ body {
     border-left: 4px solid var(--accent-reel);
 }
 
-.card-delete {
+.card-controls {
     position: absolute;
     top: 6px;
     right: 6px;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    opacity: 0;
+    transition: var(--transition-fast);
+    z-index: 10;
+}
+
+.content-card:hover .card-controls {
+    opacity: 1;
+}
+
+.card-link-btn,
+.card-delete {
     background: transparent;
     border: none;
     color: var(--text-muted);
     cursor: pointer;
     padding: 4px;
     border-radius: 4px;
-    opacity: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: var(--transition-fast);
+    text-decoration: none;
 }
 
-.content-card:hover .card-delete {
-    opacity: 1;
+.card-link-btn:hover {
+    color: var(--accent-primary);
+    background: rgba(0, 122, 255, 0.1);
+    transform: scale(1.1);
 }
 
 .card-delete:hover {
@@ -436,7 +455,31 @@ body {
     background: rgba(239, 68, 68, 0.1);
 }
 
+.card-link-btn svg,
 .card-delete svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Scheduled Card Actions (Grid) */
+.card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.grid-link {
+    padding: 0;
+    opacity: 0.6;
+}
+
+.grid-link:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+.grid-link svg {
     width: 12px;
     height: 12px;
 }

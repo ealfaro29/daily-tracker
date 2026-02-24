@@ -627,12 +627,22 @@ function renderPool() {
         el.draggable = true;
 
         el.innerHTML = `
-            <button class="card-delete" data-action="delete">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="6" x2="6" y2="18"/>
-                    <line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-            </button>
+            <div class="card-controls">
+                ${card.url ? `
+                    <a href="${card.url}" target="_blank" class="card-link-btn" title="Ver link original">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                        </svg>
+                    </a>
+                ` : ''}
+                <button class="card-delete" data-action="delete">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
             <textarea class="card-description" placeholder="Add description..." rows="1">${card.description || ''}</textarea>
         `;
 
@@ -669,14 +679,16 @@ function renderPool() {
 }
 
 function renderWeekGrid() {
-    const dates = getWeekDates(globalOffset);
+    const dates = getWeekDates(0);
     elements.weekGrid.innerHTML = '';
 
-    // Update week indicator
-    const startDate = dates[0];
-    const endDate = dates[dates.length - 1];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    elements.weekIndicator.textContent = `${months[startDate.getMonth()]} ${startDate.getDate()} - ${months[endDate.getMonth()]} ${endDate.getDate()}`;
+    // Update week indicator if it exists
+    if (elements.weekIndicator && currentView === 'history') {
+        const startDate = dates[0];
+        const endDate = dates[dates.length - 1];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        elements.weekIndicator.textContent = `${months[startDate.getMonth()]} ${startDate.getDate()} - ${months[endDate.getMonth()]} ${endDate.getDate()}`;
+    }
 
     dates.forEach(date => {
         const dateKey = getDateKey(date);
@@ -735,8 +747,18 @@ function renderWeekGrid() {
                         <div class="card-info">
                             <div class="card-desc">${card.description || 'New Entry'}</div>
                         </div>
-                        <div class="card-check">
-                            ${status === CARD_STATUS.POSTED ? '✓' : ''}
+                        <div class="card-actions">
+                            ${card.url ? `
+                                <a href="${card.url}" target="_blank" class="card-link-btn grid-link" title="Ver link original">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                                    </svg>
+                                </a>
+                            ` : ''}
+                            <div class="card-check">
+                                ${status === CARD_STATUS.POSTED ? '✓' : ''}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -847,7 +869,7 @@ function render() {
 // ===========================
 // Tabs & Views
 // ===========================
-let currentView = 'scheduler';
+let currentView = 'inspiration';
 let dashboardMonth = new Date();
 
 function switchTab(viewId) {
@@ -965,7 +987,8 @@ async function moveIdeaToPool(id) {
     const newCard = {
         id: generateId(),
         type: 'post', // Default to post
-        description: `Ref: ${idea.url}`,
+        description: idea.title,
+        url: idea.url, // Store the reference link
         status: CARD_STATUS.SCHEDULED,
         createdAt: new Date().toISOString()
     };
@@ -991,7 +1014,9 @@ function renderHistory() {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     // Update Header
-    elements.historyWeekLabel.textContent = `${months[startDate.getMonth()]} ${startDate.getDate()} - ${months[endDate.getMonth()]} ${endDate.getDate()}`;
+    if (elements.weekIndicator) {
+        elements.weekIndicator.textContent = `${months[startDate.getMonth()]} ${startDate.getDate()} - ${months[endDate.getMonth()]} ${endDate.getDate()}`;
+    }
 
     // Clear Grid
     elements.historyGrid.innerHTML = '';
@@ -1346,18 +1371,16 @@ function setupEventListeners() {
         btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
 
-    // Global Week Navigation
+    // Global Week Navigation (ONLY for History now)
     if (elements.weekPrev) {
         elements.weekPrev.addEventListener('click', () => {
             globalOffset--;
-            render();
             if (currentView === 'history') renderHistory();
         });
     }
     if (elements.weekNext) {
         elements.weekNext.addEventListener('click', () => {
             globalOffset++;
-            render();
             if (currentView === 'history') renderHistory();
         });
     }
@@ -1365,7 +1388,6 @@ function setupEventListeners() {
         elements.jumpToday.addEventListener('click', () => {
             globalOffset = 0;
             dashboardMonth = new Date();
-            render();
             if (currentView === 'history') renderHistory();
         });
     }
