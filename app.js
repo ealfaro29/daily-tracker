@@ -251,7 +251,7 @@ async function saveData() {
     } catch (e) {
         console.error("Firebase Sync Error:", e);
         // We stay 'offline' but local data is safe
-        updateSyncStatus('offline', 'Error de Permisos/Conexión (Local Activo)');
+        updateSyncStatus('offline', 'Permissions/Connection Error (Local Active)');
     }
 }
 
@@ -917,7 +917,7 @@ function renderInspiration() {
                 domain = new URL(idea.url).hostname.replace('www.', '');
                 favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
             } catch (e) {
-                domain = 'Referencia';
+                domain = 'Reference';
             }
         }
 
@@ -933,11 +933,11 @@ function renderInspiration() {
             ` : ''}
             <div class="ins-content">
                 <div class="ins-type-badge ${idea.type || 'post'}">${typeIcon} ${idea.type || 'post'}</div>
-                <div class="ins-title">${idea.title || 'Idea Sin Título'}</div>
+                <div class="ins-title">${idea.title || 'Untitled Idea'}</div>
                 ${idea.url ? `<a href="${idea.url}" target="_blank" class="ins-url">${idea.url}</a>` : ''}
             </div>
             <div class="ins-actions">
-                <button class="ins-send-btn" onclick="moveIdeaToPool('${idea.id}')">Mandarlo al Pool</button>
+                <button class="ins-send-btn" onclick="moveIdeaToPool('${idea.id}')">Send to Pool</button>
                 <button class="ins-del-btn" onclick="deleteIdea('${idea.id}')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;">
                         <path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
