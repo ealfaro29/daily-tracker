@@ -58,8 +58,14 @@
             </nav>
 
             <div class="header-controls">
-                <div class="week-indicator" id="weekIndicator">
-                    Jan 16 - Jan 22
+                <div class="calendar-nav global-week-nav">
+                    <button id="weekPrev" class="icon-btn" title="Previous Week">←</button>
+                    <button id="jumpToday" class="icon-btn" title="Jump to Today"
+                        style="font-size: 0.7rem; padding: 0 8px; width: auto; border-radius: 12px;">Today</button>
+                    <div class="week-indicator" id="weekIndicator">
+                        Jan 16 - Jan 22
+                    </div>
+                    <button id="weekNext" class="icon-btn" title="Next Week">→</button>
                 </div>
                 <button class="icon-btn" id="exportBtn" title="Export Data">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -214,10 +220,8 @@
                                 </svg>
                                 Monthly Overview
                             </h2>
-                            <div class="calendar-nav">
-                                <button id="prevMonth" class="icon-btn">←</button>
-                                <span id="currentMonthLabel">...</span>
-                                <button id="nextMonth" class="icon-btn">→</button>
+                            <div class="calendar-nav month-label-container">
+                                <span id="currentMonthLabel" style="font-size: 0.9rem; font-weight: 600;">...</span>
                             </div>
                         </div>
                         <div class="calendar-grid" id="monthCalendar">
@@ -292,10 +296,8 @@
                                 </svg>
                                 Weekly History
                             </h2>
-                            <div class="calendar-nav">
-                                <button id="histPrev" class="icon-btn">←</button>
+                            <div class="calendar-nav history-label-container">
                                 <span id="historyWeekLabel" style="font-size: 0.9rem; font-weight: 600;">...</span>
-                                <button id="histNext" class="icon-btn">→</button>
                             </div>
                         </div>
                         <div class="week-grid" id="historyGrid">

@@ -32,6 +32,8 @@ let appData = {
 };
 let permanentNotes = '';
 let draggedCard = null;
+let globalOffset = 0;
+let currentDate = new Date();
 
 // ===========================
 // DOM Elements
@@ -55,15 +57,15 @@ const elements = {
     views: document.querySelectorAll('.view-container'),
     monthCalendar: document.getElementById('monthCalendar'),
     currentMonthLabel: document.getElementById('currentMonthLabel'),
-    prevMonthBtn: document.getElementById('prevMonth'),
-    nextMonthBtn: document.getElementById('nextMonth'),
     totalPostsValue: document.getElementById('totalPostsValue'),
     completionRateValue: document.getElementById('completionRateValue'),
+    jumpToday: document.getElementById('jumpToday'),
     // History
     historyGrid: document.getElementById('historyGrid'),
     historyWeekLabel: document.getElementById('historyWeekLabel'),
-    histPrev: document.getElementById('histPrev'),
-    histNext: document.getElementById('histNext'),
+    // Global Navigation
+    weekPrev: document.getElementById('weekPrev'),
+    weekNext: document.getElementById('weekNext'),
     // Context Menu
     cardContextMenu: document.getElementById('cardContextMenu'),
     menuDelete: document.getElementById('menuDelete'),
@@ -106,16 +108,16 @@ function getDayName(date) {
     return days[date.getDay()];
 }
 
-function getWeekDates() {
-    const now = new Date();
-    const currentDay = now.getDay(); // 0 (Sun) to 6 (Sat)
-    const sundayDate = new Date(now);
-    sundayDate.setDate(now.getDate() - currentDay);
+function getWeekDates(offset = 0) {
+    const startOfWeek = new Date(currentDate);
+    const day = startOfWeek.getDay();
+    // Set to previous Sunday
+    startOfWeek.setDate(startOfWeek.getDate() - day + (offset * 7));
 
     const dates = [];
     for (let i = 0; i < 7; i++) {
-        const d = new Date(sundayDate);
-        d.setDate(sundayDate.getDate() + i);
+        const d = new Date(startOfWeek);
+        d.setDate(startOfWeek.getDate() + i);
         dates.push(d);
     }
     return dates;
@@ -611,7 +613,7 @@ function renderPool() {
 }
 
 function renderWeekGrid() {
-    const dates = getWeekDates();
+    const dates = getWeekDates(globalOffset);
     elements.weekGrid.innerHTML = '';
 
     // Update week indicator
@@ -804,6 +806,8 @@ function switchTab(viewId) {
     });
 
     if (viewId === 'metrics') {
+        // When switching to metrics, align the monthly view with the current global focal date
+        dashboardMonth = new Date(getWeekDates(globalOffset)[3]); // Use Wednesday of the current focal week
         renderDashboard();
     } else if (viewId === 'history') {
         renderHistory();
@@ -811,7 +815,7 @@ function switchTab(viewId) {
 }
 
 function renderHistory() {
-    const dates = getWeekDates(); // Returns 7 days (Sun-Sat)
+    const dates = getWeekDates(globalOffset);
     const startDate = dates[0];
     const endDate = dates[dates.length - 1];
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -898,20 +902,20 @@ function renderDashboard() {
 
 function renderKPIs() {
     const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
+    const targetMonth = dashboardMonth.getMonth();
+    const targetYear = dashboardMonth.getFullYear();
 
     let totalScheduledMonth = 0;
     let totalScoreSum = 0;
     let totalDaysPassed = 0;
 
     // Iterate day by day for accurate checks
-    const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const totalDaysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
 
     for (let day = 1; day <= totalDaysInMonth; day++) {
         // Construct date object for this specific day
-        const dateToCheck = new Date(currentYear, currentMonth, day);
-        const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dateToCheck = new Date(targetYear, targetMonth, day);
+        const dateKey = `${targetYear}-${String(targetMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
         // Skip days before the first record of data if in the very first month of app lifetime
         // (Just a cleaner way to avoid 0% for days we literally didn't have the app)
@@ -1168,27 +1172,27 @@ function setupEventListeners() {
         btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
 
-    // Calendar Nav
-    elements.prevMonthBtn.addEventListener('click', () => {
-        dashboardMonth.setMonth(dashboardMonth.getMonth() - 1);
-        renderCalendar();
-    });
-    elements.nextMonthBtn.addEventListener('click', () => {
-        dashboardMonth.setMonth(dashboardMonth.getMonth() + 1);
-        renderCalendar();
-    });
-
-    // History Nav
-    if (elements.histPrev) {
-        elements.histPrev.addEventListener('click', () => {
-            historyOffset--;
-            renderHistory();
+    // Global Week Navigation
+    if (elements.weekPrev) {
+        elements.weekPrev.addEventListener('click', () => {
+            globalOffset--;
+            render();
+            if (currentView === 'history') renderHistory();
         });
     }
-    if (elements.histNext) {
-        elements.histNext.addEventListener('click', () => {
-            historyOffset++;
-            renderHistory();
+    if (elements.weekNext) {
+        elements.weekNext.addEventListener('click', () => {
+            globalOffset++;
+            render();
+            if (currentView === 'history') renderHistory();
+        });
+    }
+    if (elements.jumpToday) {
+        elements.jumpToday.addEventListener('click', () => {
+            globalOffset = 0;
+            dashboardMonth = new Date();
+            render();
+            if (currentView === 'history') renderHistory();
         });
     }
 
