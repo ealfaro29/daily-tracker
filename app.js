@@ -924,9 +924,10 @@ function renderInspiration() {
         const typeIcon = idea.type === 'reel' ? '🎬' : idea.type === 'promo' ? '📢' : '📷';
 
         card.innerHTML = `
-            ${favicon ? `
+            ${favicon || idea.image ? `
                 <div class="ins-preview">
-                    <img src="${favicon}" alt="icon" onerror="this.style.display='none'">
+                    ${idea.image ? `<img src="${idea.image}" class="ins-thumb" alt="preview">` : ''}
+                    ${favicon ? `<img src="${favicon}" class="ins-favicon" alt="icon">` : ''}
                     <span class="ins-domain">${domain}</span>
                 </div>
             ` : ''}
@@ -1004,6 +1005,7 @@ async function addInspiration() {
         id: generateId(),
         title: title,
         url: url,
+        image: '', // Will fetch in background
         content: url ? '' : rawValue,
         type: type,
         createdAt: new Date().toISOString()
@@ -1013,7 +1015,30 @@ async function addInspiration() {
     renderInspiration();
     hideInspirationModal();
     elements.inspirationMainInput.value = '';
+
+    // Attempt to fetch metadata background
+    if (url) {
+        fetchMetadata(newIdea.id, url);
+    }
+
     await saveData();
+}
+
+async function fetchMetadata(ideaId, url) {
+    try {
+        const res = await fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+        if (data.status === 'success' && data.data.image) {
+            const index = appData.ideas.findIndex(i => i.id === ideaId);
+            if (index !== -1) {
+                appData.ideas[index].image = data.data.image.url;
+                renderInspiration(); // Re-render to show image
+                await saveData();
+            }
+        }
+    } catch (e) {
+        console.warn("Error fetching link metadata:", e);
+    }
 }
 
 async function deleteIdea(id) {
@@ -1441,8 +1466,9 @@ function setupEventListeners() {
 
     // Inspiration
     if (elements.inspirationMainInput) {
-        elements.inspirationMainInput.addEventListener('keypress', (e) => {
+        elements.inspirationMainInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && elements.inspirationMainInput.value.trim()) {
+                e.preventDefault();
                 showInspirationModal(elements.inspirationMainInput.value);
             }
         });

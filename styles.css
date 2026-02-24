@@ -2049,7 +2049,6 @@ canvas {
     background: var(--bg-primary);
     border-radius: var(--border-radius-md);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     overflow: hidden;
@@ -2057,19 +2056,46 @@ canvas {
     border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
-.ins-preview img {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    margin-bottom: 8px;
+.ins-preview img.ins-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.inspiration-card:hover .ins-thumb {
+    transform: scale(1.05);
+}
+
+.ins-preview img.ins-favicon {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    background: white;
+    padding: 2px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .ins-domain {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-tertiary);
-    text-transform: uppercase;
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 8px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
 
 .ins-type-badge {
     display: inline-flex;
