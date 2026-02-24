@@ -55,19 +55,21 @@
         textarea,
         select {
             width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #E5E5E7;
+            padding: 10px 12px;
+            border: 1px solid #D2D2D7;
             border-radius: 8px;
             font-size: 0.9rem;
+            color: var(--text-primary);
             box-sizing: border-box;
             outline: none;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
         }
 
         input:focus,
         textarea:focus,
         select:focus {
             border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
         }
 
         .category-selector {
@@ -78,14 +80,21 @@
 
         .cat-opt {
             flex: 1;
-            padding: 6px;
+            padding: 8px 6px;
             font-size: 0.75rem;
-            border: 1px solid #E5E5E7;
-            background: #F5F5F7;
+            font-weight: 500;
+            border: 1px solid #D2D2D7;
+            background: #FFFFFF;
+            color: var(--text-primary);
             border-radius: 6px;
             cursor: pointer;
             text-align: center;
             transition: all 0.2s;
+        }
+
+        .cat-opt:hover {
+            background: #F5F5F7;
+            border-color: #86868B;
         }
 
         .cat-opt.active {
@@ -99,16 +108,18 @@
             background: var(--accent-primary);
             color: white;
             border: none;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             font-weight: 600;
+            font-size: 0.9rem;
             cursor: pointer;
             margin-top: 8px;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
         }
 
         .btn-save:hover {
             opacity: 0.9;
+            transform: translateY(-1px);
         }
 
         .status {
