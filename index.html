@@ -49,6 +49,15 @@
                     </svg>
                     Metrics
                 </button>
+                <button class="tab-btn" data-tab="inspiration">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 19l7-7 3 3-7 7-3-3z" />
+                        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+                        <path d="M2 2l7.586 7.586" />
+                        <circle cx="11" cy="11" r="2" />
+                    </svg>
+                    Inspiration
+                </button>
                 <button class="tab-btn" data-tab="history">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -205,7 +214,38 @@
                 </div>
             </div>
 
-            <!-- VIEW 2: METRICS DASHBOARD -->
+            <!-- VIEW 2: INSPIRATION (IDEAS) -->
+            <div id="inspiration-view" class="view-container">
+                <div class="inspiration-layout">
+                    <section class="inspiration-input-box bento-box">
+                        <div class="box-header">
+                            <h2>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                                </svg>
+                                Add Inspiration
+                            </h2>
+                        </div>
+                        <div class="link-input-group">
+                            <input type="url" id="inspirationUrl"
+                                placeholder="Paste a link here (Instagram, TikTok, Pinterest...)" />
+                            <button id="addInspirationBtn" class="action-btn">
+                                <span class="btn-emoji">✨</span>
+                                <span>Capturar</span>
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="inspiration-grid-container">
+                        <div class="pinterest-grid" id="inspirationGrid">
+                            <!-- Pinterest cards injected here -->
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- VIEW 3: METRICS DASHBOARD -->
             <div id="metrics-view" class="view-container">
                 <div class="dashboard-grid">
                     <!-- Monthly Calendar (Left - Large) -->

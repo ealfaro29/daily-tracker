@@ -28,7 +28,8 @@ const CARD_STATUS = {
 // ===========================
 let appData = {
     pool: [],           // Cards in the pool
-    schedule: {}        // Cards scheduled by date key
+    schedule: {},       // Cards scheduled by date key
+    ideas: []           // Captures from Inspiration Board
 };
 let permanentNotes = '';
 let draggedCard = null;
@@ -82,7 +83,11 @@ const elements = {
     deleteCancelBtn: document.getElementById('deleteCancelBtn'),
     // Context Menu Extra
     menuMoveToPool: document.getElementById('menuMoveToPool'),
-    clearPoolBtn: document.getElementById('clearPoolBtn')
+    clearPoolBtn: document.getElementById('clearPoolBtn'),
+    // Inspiration Board
+    inspirationGrid: document.getElementById('inspirationGrid'),
+    inspirationUrl: document.getElementById('inspirationUrl'),
+    addInspirationBtn: document.getElementById('addInspirationBtn')
 };
 
 // ===========================
@@ -168,7 +173,8 @@ async function loadData() {
         if (docSnap.exists()) {
             // REMOTE DATA EXISTS -> Use it (Source of Truth)
             const data = docSnap.data();
-            appData = data.appData || { pool: [], schedule: {} };
+            appData = data.appData || { pool: [], schedule: {}, ideas: [] };
+            if (!appData.ideas) appData.ideas = [];
             permanentNotes = data.permanentNotes || '';
             console.log("Data loaded from Firebase");
         } else {
@@ -179,7 +185,10 @@ async function loadData() {
 
             if (localData || localNotes) {
                 // MIGRATE: Upload Local -> Firebase
-                if (localData) appData = JSON.parse(localData);
+                if (localData) {
+                    appData = JSON.parse(localData);
+                    if (!appData.ideas) appData.ideas = [];
+                }
                 if (localNotes) permanentNotes = localNotes;
 
                 await saveData(); // Save to Firebase immediately
@@ -811,8 +820,98 @@ function switchTab(viewId) {
         renderDashboard();
     } else if (viewId === 'history') {
         renderHistory();
+    } else if (viewId === 'inspiration') {
+        renderInspiration();
     }
 }
+
+function renderInspiration() {
+    if (!elements.inspirationGrid) return;
+    elements.inspirationGrid.innerHTML = '';
+
+    appData.ideas.forEach(idea => {
+        const card = document.createElement('div');
+        card.className = 'inspiration-card';
+
+        const domain = new URL(idea.url).hostname.replace('www.', '');
+        const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+
+        card.innerHTML = `
+            <div class="ins-preview">
+                <img src="${favicon}" alt="icon" onerror="this.style.display='none'">
+                <span class="ins-domain">${domain}</span>
+            </div>
+            <div class="ins-content">
+                <div class="ins-title">${idea.title || 'Idea Sin Título'}</div>
+                <a href="${idea.url}" target="_blank" class="ins-url">${idea.url}</a>
+            </div>
+            <div class="ins-actions">
+                <button class="ins-send-btn" onclick="moveIdeaToPool('${idea.id}')">Mandarlo al Pool</button>
+                <button class="ins-del-btn" onclick="deleteIdea('${idea.id}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;">
+                        <path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+        elements.inspirationGrid.appendChild(card);
+    });
+}
+
+async function addInspiration() {
+    const url = elements.inspirationUrl.value.trim();
+    if (!url) return;
+
+    try {
+        const urlObj = new URL(url);
+        const newIdea = {
+            id: generateId(),
+            url: url,
+            title: urlObj.hostname.replace('www.', ''),
+            createdAt: new Date().toISOString()
+        };
+
+        appData.ideas.unshift(newIdea);
+        elements.inspirationUrl.value = '';
+        renderInspiration();
+        await saveData();
+    } catch (e) {
+        alert('Por favor inserta un link válido');
+    }
+}
+
+async function deleteIdea(id) {
+    appData.ideas = appData.ideas.filter(i => i.id !== id);
+    renderInspiration();
+    await saveData();
+}
+
+async function moveIdeaToPool(id) {
+    const idea = appData.ideas.find(i => i.id === id);
+    if (!idea) return;
+
+    // Create a new card in the pool
+    const newCard = {
+        id: generateId(),
+        type: 'post', // Default to post
+        description: `Ref: ${idea.url}`,
+        status: CARD_STATUS.SCHEDULED,
+        createdAt: new Date().toISOString()
+    };
+
+    appData.pool.unshift(newCard);
+
+    // Remove from ideas board
+    appData.ideas = appData.ideas.filter(i => i.id !== id);
+
+    renderInspiration();
+    renderPool();
+    await saveData();
+}
+
+window.moveIdeaToPool = moveIdeaToPool;
+window.deleteIdea = deleteIdea;
+
 
 function renderHistory() {
     const dates = getWeekDates(globalOffset);
@@ -1203,6 +1302,16 @@ function setupEventListeners() {
     // Context Menu Actions
     elements.menuDelete.addEventListener('click', handleMenuDelete);
     elements.menuEdit.addEventListener('click', handleMenuEdit);
+
+    // Inspiration
+    if (elements.addInspirationBtn) {
+        elements.addInspirationBtn.addEventListener('click', addInspiration);
+    }
+    if (elements.inspirationUrl) {
+        elements.inspirationUrl.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addInspiration();
+        });
+    }
 
     // Modal Actions
     elements.modalCloseBtn.addEventListener('click', hideModal);
