@@ -67,7 +67,20 @@ const elements = {
     // Context Menu
     cardContextMenu: document.getElementById('cardContextMenu'),
     menuDelete: document.getElementById('menuDelete'),
-    menuEdit: document.getElementById('menuEdit')
+    menuEdit: document.getElementById('menuEdit'),
+    // Modal
+    editModalOverlay: document.getElementById('editModalOverlay'),
+    modalCloseBtn: document.getElementById('modalCloseBtn'),
+    modalCancelBtn: document.getElementById('modalCancelBtn'),
+    modalSaveBtn: document.getElementById('modalSaveBtn'),
+    modalEditDesc: document.getElementById('modalEditDesc'),
+    // Delete Modal
+    deleteModalOverlay: document.getElementById('deleteModalOverlay'),
+    deleteConfirmBtn: document.getElementById('deleteConfirmBtn'),
+    deleteCancelBtn: document.getElementById('deleteCancelBtn'),
+    // Context Menu Extra
+    menuMoveToPool: document.getElementById('menuMoveToPool'),
+    clearPoolBtn: document.getElementById('clearPoolBtn')
 };
 
 // ===========================
@@ -108,20 +121,7 @@ function getWeekDates() {
     return dates;
 }
 
-function getCurrentWeekDates() {
-    const now = new Date();
-    const currentDay = now.getDay(); // 0 (Sun) to 6 (Sat)
-    const sundayDate = new Date(now);
-    sundayDate.setDate(now.getDate() - currentDay);
-
-    const dates = [];
-    for (let i = 0; i < 7; i++) {
-        const d = new Date(sundayDate);
-        d.setDate(sundayDate.getDate() + i);
-        dates.push(d);
-    }
-    return dates;
-}
+// function getCurrentWeekDates() is redundant, using getWeekDates instead.
 
 function isToday(date) {
     const today = new Date();
@@ -266,6 +266,15 @@ function deleteCard(cardId, fromPool = true) {
     render();
 }
 
+function clearPool() {
+    if (appData.pool.length === 0) return;
+    if (confirm("Are you sure you want to clear all cards from the pool?")) {
+        appData.pool = [];
+        saveData();
+        render();
+    }
+}
+
 function updateCardDescription(cardId, description, inPool = true) {
     if (inPool) {
         const card = appData.pool.find(c => c.id === cardId);
@@ -325,6 +334,13 @@ function showContextMenu(e, cardId, isPool) {
     menu.style.left = `${x}px`;
     menu.style.top = `${y}px`;
 
+    // Show/Hide "Move to Pool" based on where the card is
+    if (isPool) {
+        elements.menuMoveToPool.style.display = 'none';
+    } else {
+        elements.menuMoveToPool.style.display = 'flex';
+    }
+
     // Hide menu on click elsewhere
     const hideMenu = () => {
         menu.style.display = 'none';
@@ -335,7 +351,41 @@ function showContextMenu(e, cardId, isPool) {
 
 function handleMenuDelete() {
     if (!activeContextCard) return;
+    elements.deleteModalOverlay.classList.add('show');
+}
+
+function confirmDelete() {
+    if (!activeContextCard) return;
     deleteCard(activeContextCard.id, activeContextCard.isPool);
+    hideDeleteModal();
+}
+
+function hideDeleteModal() {
+    elements.deleteModalOverlay.classList.remove('show');
+    activeContextCard = null;
+}
+
+function handleMenuMoveToPool() {
+    if (!activeContextCard || activeContextCard.isPool) return;
+
+    const { id } = activeContextCard;
+
+    // Find the card in the schedule
+    let foundCard = null;
+    for (const dKey in appData.schedule) {
+        const index = appData.schedule[dKey].findIndex(c => c && c.id === id);
+        if (index !== -1) {
+            foundCard = appData.schedule[dKey][index];
+            appData.schedule[dKey][index] = null;
+            break;
+        }
+    }
+
+    if (foundCard) {
+        appData.pool.push(foundCard);
+        saveData();
+        render();
+    }
     activeContextCard = null;
 }
 
@@ -344,21 +394,30 @@ function handleMenuEdit() {
 
     const { id, isPool } = activeContextCard;
 
-    // If it's a scheduled card, we can't edit text directly in the card face because it's a div
-    // Let's use a prompt or transform it into a pool item temporarily? 
-    // Actually, let's just use a prompt for simplicity as a premium "quick edit"
     const currentCard = isPool
         ? appData.pool.find(c => c.id === id)
         : Object.values(appData.schedule).flat().find(c => c && c.id === id);
 
     if (currentCard) {
-        const newDesc = prompt("Edit content description:", currentCard.description || "");
-        if (newDesc !== null) {
-            updateCardDescription(id, newDesc, isPool);
-            render();
-        }
+        elements.modalEditDesc.value = currentCard.description || "";
+        elements.editModalOverlay.classList.add('show');
     }
+}
+
+function hideModal() {
+    elements.editModalOverlay.classList.remove('show');
     activeContextCard = null;
+}
+
+function saveModalEdit() {
+    if (!activeContextCard) return;
+
+    const { id, isPool } = activeContextCard;
+    const newDesc = elements.modalEditDesc.value;
+
+    updateCardDescription(id, newDesc, isPool);
+    render();
+    hideModal();
 }
 
 // ===========================
@@ -489,9 +548,13 @@ function renderPool() {
 
     if (appData.pool.length === 0) {
         elements.poolCards.innerHTML = `
-            <div class="empty-pool">
-                <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 40px 20px;">
-                    Create content cards and drag them to schedule
+            <div class="empty-pool-premium" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; opacity: 0.4; padding: 20px; border: 1px dashed var(--border-light); border-radius: var(--border-radius-md); margin: 10px;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 12px; color: var(--text-tertiary);">
+                    <path d="M12 5v14M5 12h14" transform="rotate(45 12 12)"></path>
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                </svg>
+                <p style="color: var(--text-tertiary); font-size: 0.8rem; text-align: center; font-weight: 500;">
+                    Your pool is empty.<br>Start by adding content below.
                 </p>
             </div>
         `;
@@ -675,7 +738,7 @@ function renderWeekGrid() {
 
 function renderMetrics() {
     // Use standard Sunday-Saturday week
-    const dates = getCurrentWeekDates();
+    const dates = getWeekDates();
     let contentCount = 0, reels = 0;
 
     dates.forEach(d => {
@@ -748,7 +811,7 @@ function switchTab(viewId) {
 }
 
 function renderHistory() {
-    const dates = getCurrentWeekDates(); // Returns 7 days (Sun-Sat)
+    const dates = getWeekDates(); // Returns 7 days (Sun-Sat)
     const startDate = dates[0];
     const endDate = dates[dates.length - 1];
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -846,12 +909,14 @@ function renderKPIs() {
     const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
     for (let day = 1; day <= totalDaysInMonth; day++) {
-        // EXCEPTION: Project started Jan 3rd, 2026. Skip Jan 1 & 2.
-        if (currentYear === 2026 && currentMonth === 0 && day < 3) continue;
-
         // Construct date object for this specific day
         const dateToCheck = new Date(currentYear, currentMonth, day);
         const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+        // Skip days before the first record of data if in the very first month of app lifetime
+        // (Just a cleaner way to avoid 0% for days we literally didn't have the app)
+        const dayCards = (appData.schedule[dateKey] || []).filter(c => c !== null);
+        if (totalScheduledMonth === 0 && dayCards.length === 0) continue;
 
         // Zero out time for pure date comparison
         dateToCheck.setHours(0, 0, 0, 0);
@@ -859,7 +924,6 @@ function renderKPIs() {
         todayZero.setHours(0, 0, 0, 0);
 
         // Check content for this day
-        const dayCards = (appData.schedule[dateKey] || []).filter(c => c !== null);
         totalScheduledMonth += dayCards.length;
 
         // Logic: Calculate "Score" for PASSSED days only
@@ -1131,6 +1195,33 @@ function setupEventListeners() {
     // Context Menu Actions
     elements.menuDelete.addEventListener('click', handleMenuDelete);
     elements.menuEdit.addEventListener('click', handleMenuEdit);
+
+    // Modal Actions
+    elements.modalCloseBtn.addEventListener('click', hideModal);
+    elements.modalCancelBtn.addEventListener('click', hideModal);
+    elements.modalSaveBtn.addEventListener('click', saveModalEdit);
+
+    // Close modal on click outside
+    elements.editModalOverlay.addEventListener('click', (e) => {
+        if (e.target === elements.editModalOverlay) {
+            hideModal();
+        }
+    });
+
+    // Delete Modal Actions
+    elements.deleteConfirmBtn.addEventListener('click', confirmDelete);
+    elements.deleteCancelBtn.addEventListener('click', hideDeleteModal);
+    elements.deleteModalOverlay.addEventListener('click', (e) => {
+        if (e.target === elements.deleteModalOverlay) {
+            hideDeleteModal();
+        }
+    });
+
+    elements.menuMoveToPool.addEventListener('click', handleMenuMoveToPool);
+
+    if (elements.clearPoolBtn) {
+        elements.clearPoolBtn.addEventListener('click', clearPool);
+    }
 
     // Export Data
     const exportBtn = document.getElementById('exportBtn');
