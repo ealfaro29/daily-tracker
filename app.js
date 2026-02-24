@@ -103,6 +103,16 @@ const elements = {
     insModalSaveBtn: document.getElementById('insModalSaveBtn'),
     insModalCancelBtn: document.getElementById('insModalCancelBtn'),
     insModalCloseBtn: document.getElementById('insModalCloseBtn'),
+    // Inspiration Edit Modal
+    insEditModalOverlay: document.getElementById('insEditModalOverlay'),
+    insEditTitle: document.getElementById('insEditTitle'),
+    insEditCategorySelector: document.getElementById('insEditCategorySelector'),
+    insEditMainUrl: document.getElementById('insEditMainUrl'),
+    insEditNotes: document.getElementById('insEditNotes'),
+    insEditExtraLinks: document.getElementById('insEditExtraLinks'),
+    insEditModalSaveBtn: document.getElementById('insEditModalSaveBtn'),
+    insEditModalCancelBtn: document.getElementById('insEditModalCancelBtn'),
+    insEditModalCloseBtn: document.getElementById('insEditModalCloseBtn'),
     syncStatus: document.getElementById('syncStatus'),
     syncText: document.querySelector('#syncStatus .sync-text')
 };
@@ -922,6 +932,7 @@ function renderInspiration() {
         }
 
         const typeIcon = idea.type === 'reel' ? '🎬' : idea.type === 'promo' ? '📢' : '📷';
+        const hasExtra = (idea.notes && idea.notes.trim()) || (idea.extraLinks && idea.extraLinks.trim());
 
         card.innerHTML = `
             ${favicon || idea.image ? `
@@ -935,8 +946,20 @@ function renderInspiration() {
                 <div class="ins-type-badge ${idea.type || 'post'}">${typeIcon} ${idea.type || 'post'}</div>
                 <div class="ins-title">${idea.title || 'Untitled Idea'}</div>
                 ${idea.url ? `<a href="${idea.url}" target="_blank" class="ins-url">${idea.url}</a>` : ''}
+                ${hasExtra ? `
+                    <div class="ins-extra-indicators">
+                        ${idea.notes ? `<span title="Has Notes">📝</span>` : ''}
+                        ${idea.extraLinks ? `<span title="Has Extra links">🔗</span>` : ''}
+                    </div>
+                ` : ''}
             </div>
             <div class="ins-actions">
+                <button class="ins-edit-btn" onclick="openEditInspiration('${idea.id}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                </button>
                 <button class="ins-send-btn" onclick="moveIdeaToPool('${idea.id}')">Send to Pool</button>
                 <button class="ins-del-btn" onclick="deleteIdea('${idea.id}')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;">
@@ -1051,12 +1074,19 @@ async function moveIdeaToPool(id) {
     const idea = appData.ideas.find(i => i.id === id);
     if (!idea) return;
 
+    // Combine main notes with description for the simpler pool card if they exist
+    let description = idea.title;
+    if (idea.notes) {
+        description += `\n---\nNotes: ${idea.notes}`;
+    }
+
     // Create a new card in the pool
     const newCard = {
         id: generateId(),
         type: idea.type || 'post', // Use the idea's selected type
-        description: idea.title,
+        description: description,
         url: idea.url, // Store the reference link
+        extraLinks: idea.extraLinks || '', // Also carry over extra links
         status: CARD_STATUS.SCHEDULED,
         createdAt: new Date().toISOString()
     };
@@ -1071,8 +1101,61 @@ async function moveIdeaToPool(id) {
     await saveData();
 }
 
+// Inspiration Edit Modal Logic
+let currentlyEditingIdeaId = null;
+
+function openEditInspiration(id) {
+    const idea = appData.ideas.find(i => i.id === id);
+    if (!idea) return;
+
+    currentlyEditingIdeaId = id;
+    elements.insEditTitle.value = idea.title || '';
+    elements.insEditMainUrl.value = idea.url || '';
+    elements.insEditNotes.value = idea.notes || '';
+    elements.insEditExtraLinks.value = idea.extraLinks || '';
+
+    // Set Category
+    const options = elements.insEditCategorySelector.querySelectorAll('.cat-opt');
+    options.forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.type === (idea.type || 'post'));
+    });
+
+    elements.insEditModalOverlay.classList.add('show');
+}
+
+function hideInsEditModal() {
+    elements.insEditModalOverlay.classList.remove('show');
+    currentlyEditingIdeaId = null;
+}
+
+async function saveInspirationEdit() {
+    if (!currentlyEditingIdeaId) return;
+    const index = appData.ideas.findIndex(i => i.id === currentlyEditingIdeaId);
+    if (index === -1) return;
+
+    const idea = appData.ideas[index];
+    const oldUrl = idea.url;
+    const newUrl = elements.insEditMainUrl.value.trim();
+
+    idea.title = elements.insEditTitle.value.trim() || 'Untitled Idea';
+    idea.url = newUrl;
+    idea.notes = elements.insEditNotes.value.trim();
+    idea.extraLinks = elements.insEditExtraLinks.value.trim();
+    idea.type = elements.insEditCategorySelector.querySelector('.active')?.dataset.type || 'post';
+
+    // If main URL changed, refetch metadata background
+    if (newUrl !== oldUrl && newUrl) {
+        fetchMetadata(idea.id, newUrl);
+    }
+
+    renderInspiration();
+    hideInsEditModal();
+    await saveData();
+}
+
 window.moveIdeaToPool = moveIdeaToPool;
 window.deleteIdea = deleteIdea;
+window.openEditInspiration = openEditInspiration;
 
 
 function renderHistory() {
@@ -1496,6 +1579,26 @@ function setupEventListeners() {
                 catButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 tempInspirationData.type = btn.dataset.type;
+            });
+        });
+    }
+
+    // Inspiration Edit Modal Listeners
+    if (elements.insEditModalSaveBtn) {
+        elements.insEditModalSaveBtn.addEventListener('click', saveInspirationEdit);
+    }
+    if (elements.insEditModalCancelBtn) {
+        elements.insEditModalCancelBtn.addEventListener('click', hideInsEditModal);
+    }
+    if (elements.insEditModalCloseBtn) {
+        elements.insEditModalCloseBtn.addEventListener('click', hideInsEditModal);
+    }
+    if (elements.insEditCategorySelector) {
+        const catButtons = elements.insEditCategorySelector.querySelectorAll('.cat-opt');
+        catButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                catButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
             });
         });
     }

@@ -2122,11 +2122,38 @@ canvas {
     white-space: nowrap;
 }
 
+.ins-extra-indicators {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
 .ins-actions {
     display: flex;
     gap: 8px;
     padding-top: 8px;
     border-top: 1px solid var(--border-subtle);
+}
+
+.ins-edit-btn {
+    width: 34px;
+    height: 34px;
+    background: var(--bg-tertiary);
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-tertiary);
+    transition: all 0.2s;
+}
+
+.ins-edit-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--accent-primary);
 }
 
 .ins-send-btn {

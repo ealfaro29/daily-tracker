@@ -33,7 +33,7 @@
                 <h1 style="display: flex; align-items: center; gap: 8px;">
                     Content Scheduler
                     <span
-                        style="font-size: 0.7rem; color: var(--text-tertiary); font-weight: 400; vertical-align: middle; opacity: 0.8;">(v.1.2.1)</span>
+                        style="font-size: 0.7rem; color: var(--text-tertiary); font-weight: 400; vertical-align: middle; opacity: 0.8;">(v.1.3.0)</span>
                     <div id="syncStatus" class="sync-status online" title="Cloud Sync Active">
                         <span class="sync-dot"></span>
                         <span class="sync-text">Synced</span>
@@ -478,6 +478,55 @@
             <div class="modal-actions">
                 <button class="action-btn" id="insModalCancelBtn">Cancel</button>
                 <button class="action-btn premium-btn" id="insModalSaveBtn">Save Idea</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inspiration Edit Modal (Expanded) -->
+    <div id="insEditModalOverlay" class="modal-overlay">
+        <div class="modal-content bento-box" style="max-width: 500px;">
+            <div class="box-header">
+                <h2 style="color: var(--accent-primary);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    Edit Inspiration
+                </h2>
+                <button class="icon-btn" id="insEditModalCloseBtn"
+                    style="font-size: 1.5rem; line-height: 1;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-field">
+                    <label>Idea Name</label>
+                    <input type="text" id="insEditTitle" />
+                </div>
+                <div class="modal-field">
+                    <label>Category</label>
+                    <div class="category-selector" id="insEditCategorySelector">
+                        <button class="cat-opt" data-type="post">Post</button>
+                        <button class="cat-opt" data-type="reel">Reel</button>
+                        <button class="cat-opt" data-type="promo">Promo</button>
+                    </div>
+                </div>
+                <div class="modal-field">
+                    <label>Main Link</label>
+                    <input type="text" id="insEditMainUrl" placeholder="https://..." />
+                </div>
+                <div class="modal-field">
+                    <label>Notes & Details</label>
+                    <textarea id="insEditNotes" class="modal-textarea" rows="4"
+                        placeholder="Deep dive into your idea here..."></textarea>
+                </div>
+                <div class="modal-field">
+                    <label>Additional Links (one per line)</label>
+                    <textarea id="insEditExtraLinks" class="modal-textarea" rows="3"
+                        placeholder="https://external-resource.com..."></textarea>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="action-btn" id="insEditModalCancelBtn">Cancel</button>
+                <button class="action-btn premium-btn" id="insEditModalSaveBtn">Update Idea</button>
             </div>
         </div>
     </div>
