@@ -106,9 +106,9 @@ body {
    App Container
    =========================== */
 .app-container {
-    max-width: 1600px;
-    margin: 0 auto;
-    padding: 0 var(--bento-padding);
+    width: 100%;
+    margin: 0;
+    padding: 0 40px;
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -1072,8 +1072,7 @@ canvas {
 /* Dashboard Grid & Layout Polish */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 1.6fr 1fr;
-    /* Better balance */
+    grid-template-columns: 1.8fr 1fr;
     gap: var(--bento-gap);
     flex: 1;
     min-height: 0;
@@ -1764,13 +1763,37 @@ canvas {
 }
 
 .pinterest-grid {
-    column-count: 4;
-    column-gap: 20px;
+    column-count: 6;
+    column-gap: 24px;
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 1800px) {
+    .pinterest-grid {
+        column-count: 5;
+    }
+}
+
+@media (max-width: 1500px) {
+    .pinterest-grid {
+        column-count: 4;
+    }
+}
+
+@media (max-width: 1200px) {
     .pinterest-grid {
         column-count: 3;
+    }
+}
+
+@media (max-width: 900px) {
+    .pinterest-grid {
+        column-count: 2;
+    }
+}
+
+@media (max-width: 600px) {
+    .pinterest-grid {
+        column-count: 1;
     }
 }
 
