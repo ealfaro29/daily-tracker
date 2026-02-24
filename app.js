@@ -228,20 +228,26 @@ async function loadData() {
 }
 
 async function saveData() {
+    // ALWAYS save to LocalStorage first so data isn't lost if Firebase fails
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    if (elements.permanentNotes) {
+        localStorage.setItem(NOTES_KEY, elements.permanentNotes.value);
+    }
+
     updateSyncStatus('pending');
-    // Save to Firestore
+
+    // Attempt Firebase sync
     try {
         await setDoc(doc(db, "daily-tracker-data", DATA_DOC_ID), {
             appData: appData,
             permanentNotes: permanentNotes,
             lastUpdated: new Date().toISOString()
         });
-        // Keep LocalStorage as a backup/cache
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
         updateSyncStatus('online');
     } catch (e) {
-        console.error("Error saving to Firebase:", e);
-        updateSyncStatus('offline', e.message);
+        console.error("Firebase Sync Error:", e);
+        // We stay 'offline' but local data is safe
+        updateSyncStatus('offline', 'Error de Permisos/Conexión (Local Activo)');
     }
 }
 
